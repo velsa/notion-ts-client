@@ -28,14 +28,12 @@ export function generateClients(sdkPath: string, notionResJSON: SearchResponse, 
   Object.entries(userConfigData.databases).map(([dbId, dbConfig]) => {
     const dbPath = path.join(sdkPath, 'dbs', dbConfig.pathName)
     const dbTypeName = normalizeTypeName(dbConfig.varName)
-    const args = process.argv[1].match(/^(.*)\/([^/]+)$/)
+    const runDir = process.argv[1].match(/^(.*)\/[^/]+$/)[1]
     const originDir = process.env.NOTION_TS_CLIENT_DEBUG
-      ? path.join(args[1], '../src')
-      : args[2] === 'dist'
-        ? path.join(args[1], '../src')
-        : path.join(args[1], '../notion-ts-client/src')
+      ? path.join(runDir, '../src')
+      : path.join(runDir, '../../notion-ts-client/src')
 
-    console.error('args', args)
+    console.error('runDir', runDir)
     console.error('originDir', originDir)
     console.error('__dirname', __dirname)
 
