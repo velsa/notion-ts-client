@@ -5,11 +5,6 @@ export default {
   testMatch: ["<rootDir>/**/*.spec.ts"],
   testPathIgnorePatterns: ["/node_modules/"],
   coverageDirectory: "./coverage",
-  coveragePathIgnorePatterns: [
-    "node_modules",
-    "src/database",
-    "src/test",
-    "src/types",
-  ],
+  coveragePathIgnorePatterns: ["node_modules", "src/test", "src/types"],
   reporters: ["default", "jest-junit"],
 };
