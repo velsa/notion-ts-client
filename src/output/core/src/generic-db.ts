@@ -1,7 +1,9 @@
+import rateLimit from './rate-limit'
+
 export type DatabaseOptions = {
   // firebaseSecret: string
-  notionSecret: string;
-};
+  notionSecret: string
+}
 
 export abstract class GenericDatabaseClass<
   DatabaseResponse,
@@ -10,31 +12,28 @@ export abstract class GenericDatabaseClass<
   DatabaseQueryResponse,
   // DatabaseWebHookOptions,
 > {
-  private firebaseSecret: string;
-  private notionApiHeaders: Record<string, string>;
-  abstract notionDatabaseId: string;
-  abstract queryRemapFilter(
-    filter: Record<string, unknown>
-  ): Record<string, unknown>;
-  abstract queryRemapSorts(
-    sorts: Record<string, string>[]
-  ): Record<string, string>[];
+  private notionApiHeaders: Record<string, string>
+  // Using simple rate limiting (https://github.com/xavi-/node-simple-rate-limiter)
+  private rateLimitedFetch = rateLimit(fetch).to(3).per(1000)
+  abstract notionDatabaseId: string
+  abstract queryRemapFilter(filter: Record<string, unknown>): Record<string, unknown>
+  abstract queryRemapSorts(sorts: Record<string, string>[]): Record<string, string>[]
 
   private notionPageApiURL(pageId) {
-    return `https://api.notion.com/v1/pages/${pageId}`;
+    return `https://api.notion.com/v1/pages/${pageId}`
   }
 
   private notionDatabaseQueryURL() {
-    return `https://api.notion.com/v1/databases/${this.notionDatabaseId}/query`;
+    return `https://api.notion.com/v1/databases/${this.notionDatabaseId}/query`
   }
 
   constructor(opts: DatabaseOptions) {
     // this.firebaseSecret = opts.firebaseSecret;
     this.notionApiHeaders = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       Authorization: `Bearer ${opts.notionSecret}`,
-      "Notion-Version": "2022-06-28",
-    };
+      'Notion-Version': '2022-06-28',
+    }
   }
 
   /**
@@ -63,23 +62,21 @@ export abstract class GenericDatabaseClass<
   async query(query: DatabaseQuery): Promise<DatabaseQueryResponse> {
     const notionQuery = {
       ...query,
-      filter: this.queryRemapFilter(query["filter"]),
-      sorts: this.queryRemapSorts(query["sorts"]),
-    };
+      filter: this.queryRemapFilter(query['filter']),
+      sorts: this.queryRemapSorts(query['sorts']),
+    }
     // console.log('Querying Notion database with:', JSON.stringify(notionQuery, null, 2))
-    const res = await fetch(this.notionDatabaseQueryURL(), {
-      method: "POST",
+    const res = await this.rateLimitedFetch(this.notionDatabaseQueryURL(), {
+      method: 'POST',
       headers: this.notionApiHeaders,
       body: JSON.stringify(notionQuery),
-    });
+    })
 
     if (!res.ok) {
-      throw new Error(
-        `Failed to query database: ${res.status} ${res.statusText}`
-      );
+      throw new Error(`Failed to query database: ${res.status} ${res.statusText}`)
     }
 
-    return (await res.json()) as DatabaseQueryResponse;
+    return (await res.json()) as DatabaseQueryResponse
   }
 
   /**
@@ -93,21 +90,17 @@ export abstract class GenericDatabaseClass<
    *
    * console.log(page.properties.title)
    */
-  // TODO: implement rate limiting
-  // https://github.com/xavi-/node-simple-rate-limiter
   async getPage(id: string): Promise<DatabaseResponse> {
-    const res = await fetch(this.notionPageApiURL(id), {
-      method: "GET",
+    const res = await this.rateLimitedFetch(this.notionPageApiURL(id), {
+      method: 'GET',
       headers: this.notionApiHeaders,
-    });
+    })
 
     if (!res.ok) {
-      throw new Error(
-        `Failed to get page properties: ${res.status} ${res.statusText}`
-      );
+      throw new Error(`Failed to get page properties: ${res.status} ${res.statusText}`)
     }
 
-    return (await res.json()) as DatabaseResponse;
+    return (await res.json()) as DatabaseResponse
   }
 
   /**
@@ -122,19 +115,15 @@ export abstract class GenericDatabaseClass<
    *
    * await db.updatePage('70b2b25b7f434306b5089486de5efced', patch)
    */
-  // TODO: implement rate limiting
-  // https://github.com/xavi-/node-simple-rate-limiter
   async updatePage(id: string, patch: DatabasePatchDTO) {
-    const res = await fetch(this.notionPageApiURL(id), {
-      method: "PATCH",
+    const res = await this.rateLimitedFetch(this.notionPageApiURL(id), {
+      method: 'PATCH',
       headers: this.notionApiHeaders,
-      body: JSON.stringify(patch["data"]),
-    });
+      body: JSON.stringify(patch['data']),
+    })
 
     if (!res.ok) {
-      throw new Error(
-        `Failed to update page properties: ${res.status} ${res.statusText}`
-      );
+      throw new Error(`Failed to update page properties: ${res.status} ${res.statusText}`)
     }
   }
 

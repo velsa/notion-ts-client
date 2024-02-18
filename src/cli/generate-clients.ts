@@ -26,6 +26,7 @@ export function generateClients(sdkPath: string, notionResJSON: SearchResponse, 
   Object.entries(userConfigData.databases).map(([dbId, dbConfig]) => {
     const dbPath = path.join(sdkPath, 'dbs', dbConfig.pathName)
     const dbTypeName = normalizeTypeName(dbConfig.varName)
+    const originDir = path.join(process.argv[1].match(/^(.*)\/[^/]+$/)[1], '../src')
 
     createTypesFile({
       dbPath,
@@ -64,7 +65,7 @@ export function generateClients(sdkPath: string, notionResJSON: SearchResponse, 
       fileName: 'index.ts',
     })
     copyCoreFiles({
-      fromPath: `./src/output/core`,
+      fromPath: path.join(originDir, 'output', 'core'),
       toPath: `${sdkPath}/core`,
     })
   })

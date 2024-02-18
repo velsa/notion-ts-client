@@ -11,6 +11,7 @@ export function copyCoreFiles(opts: { fromPath: string; toPath: string }) {
 
   fs.mkdirSync(srcToPath)
   fs.copyFileSync(path.join(srcFromPath, 'generic-db.ts'), path.join(srcToPath, 'generic-db.ts'))
+  fs.copyFileSync(path.join(srcFromPath, 'rate-limit.ts'), path.join(srcToPath, 'rate-limit.ts'))
 
   fs.mkdirSync(typesToPath)
   fs.copyFileSync(path.join(typesFromPath, 'helper.types.ts'), path.join(typesToPath, 'helper.types.ts'))

@@ -115,4 +115,10 @@ It's a paid service and it costs $10 a month. But it is way cheaper than service
 
 You can combine it with **notion-ts-client** by simply using `new MyNotionResponseDTO(webhookResponse)` in your webhook handler. This way you will get all the properties of a changed page with types and easy to use API. This will allow you to create ANY kind of automations and advanced formulas using the power of Typescript.
 
-TODO: write webhook example
+## TODO: write webhook example
+
+---
+
+License
+
+MIT © Vels Lobak
