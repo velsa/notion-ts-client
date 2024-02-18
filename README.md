@@ -87,7 +87,7 @@ npx notion-ts-client init --secret <notion_secret>
 ```
 
 A config file will be generated with config for all the databases you added to your integration.
-You can review the config file and edit the `varName` and the `readOnly` fields to your liking.
+You can review the config file and edit the `varName` and the `readOnly` fields for the properties in your databases to your liking.
 
 ### Generate Typescript Clients (SDK)
 
@@ -105,15 +105,14 @@ The clients will be generated in the specified directory.
 You can now access your Notion Databases in a fullproof and typesafe manner.
 As you should!
 
-## Using with notion webhooks (beta)
+## Using with notion webhooks (TODO)
 
-To get webhooks when the data in your Notion database changes you can use this service:
+To get a webhook every time the data in your Notion database changes you can use this service:
 
 https://notion.hostedhooks.com/
 
-It's a paid service and it costs $10 a month.
-But it is way cheaper that services like Zapier and will give you maximum level of control over your data.
+It's a paid service and it costs $10 a month. But it is way cheaper than services like Zapier and will give you maximum level of control over your data.
 
 You can combine it with **notion-ts-client** by simply using `new MyNotionResponseDTO(webhookResponse)` in your webhook handler. This way you will get all the properties of a changed page with types and easy to use API. This will allow you to create ANY kind of automations and advanced formulas using the power of Typescript.
 
-TODO: create webhook example
+TODO: write webhook example
