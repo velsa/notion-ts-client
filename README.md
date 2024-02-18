@@ -2,17 +2,10 @@
 
 Generates an easy to use and fully typed API to access and modify the data in your Notion Databases!
 
-## Usage:
-
-- Cloudflare DNS
-- Cloudflare workers
-- Reverse proxy implementation
-- TypeScript
-
 ## Supports:
 
 - Basic page methods: `getPage` and `updatePage`
-- Query with typed filters and sorts
+- Database query with typed filters and sorts
 
 <br/>
 
@@ -22,12 +15,23 @@ Generates an easy to use and fully typed API to access and modify the data in yo
 const db = new MyNotionDatabase({
   notionSecret: process.env.MY_NOTION_SECRET,
 });
+const pageId = "509931d4affa4f72beafaa6aac96f205"
 
-const pageResponse = await db.getPage("509931d4affa4f72beafaa6aac96f205");
+// Read the Notion DB page and access fully typed properties
+const pageResponse = await db.getPage(pageId);
 const page = new MyNotionResponseDTO(pageResponse);
-
 console.log(page.properties.name);
 
+// Update the Notion DB via a fully typed custom DTO
+// Note: readOnly properties are not available on the DTO
+const pageUpdate = new MyNotionPatchDTO({
+  properties: {
+    city: 'New York'
+  }
+})
+await db.updatePage(pageId, pageUpdate)
+
+// Query the Notion DB using fully typed filter and sorts
 const queryResponse = await db.query({
   filter: { and: [
     city: { equals: "New York" },
@@ -40,7 +44,7 @@ const pages = queryResponse.results.map((r) => new MyNotionResponseDTO(r));
 ```
 
 The code looks nice, right? But there is much more under the hood.
-ALL of the above code is FULLY TYPED, meaning that every property will have a custom type, based on the configuration of your Notion database.
+ALL of the above code is FULLY TYPED, meaning that every property has a custom type which is directly linked to the configuration of your Notion database.
 
 ## How to use:
 
