@@ -1,0 +1,73 @@
+import fs from 'fs'
+import path from 'path'
+import {
+  copyCoreFiles,
+  createConstantsFile,
+  createDBFile,
+  createIndexFile,
+  createPatchDTOFile,
+  createResponseDTOFile,
+  createTypesFile,
+} from '../output'
+import { SearchResponse } from '../output/core/types/notion-api.types'
+import { createCustomConfigFromNotionDatabases, normalizeTypeName } from '../parsers'
+import { ConfigFile } from '../types'
+
+export function generateClients(sdkPath: string, notionResJSON: SearchResponse, userConfigData: ConfigFile) {
+  console.log('------------------ GENERATING NOTION TYPESCRIPT CLIENT(S) ------------------')
+
+  if (fs.existsSync(sdkPath)) {
+    fs.rmSync(sdkPath, { recursive: true })
+  }
+
+  // Generate custom types and constants for some properties: Select, MultiSelect, Status
+  const dbCustomConfig = createCustomConfigFromNotionDatabases(notionResJSON, userConfigData.databases)
+
+  Object.entries(userConfigData.databases).map(([dbId, dbConfig]) => {
+    const dbPath = path.join(sdkPath, 'dbs', dbConfig.pathName)
+    const dbTypeName = normalizeTypeName(dbConfig.varName)
+
+    createTypesFile({
+      dbPath,
+      fileName: 'types.ts',
+      dbTypeName,
+      propsConfig: dbConfig.properties,
+      customPropsConfig: dbCustomConfig[dbId],
+    })
+    createConstantsFile({
+      dbPath,
+      fileName: 'constants.ts',
+      dbVarName: dbConfig.varName,
+      propsConfig: dbConfig.properties,
+      customPropsConfig: dbCustomConfig[dbId],
+    })
+    createResponseDTOFile({
+      fileName: 'response.dto.ts',
+      dbPath,
+      dbTypeName,
+      propsConfig: dbConfig.properties,
+    })
+    createPatchDTOFile({
+      fileName: 'patch.dto.ts',
+      dbPath,
+      dbTypeName,
+      propsConfig: dbConfig.properties,
+    })
+    createDBFile({
+      fileName: 'db.ts',
+      dbPath,
+      dbTypeName,
+      dbId,
+    })
+    createIndexFile({
+      dbPath,
+      fileName: 'index.ts',
+    })
+    copyCoreFiles({
+      fromPath: `./src/output/core`,
+      toPath: `${sdkPath}/core`,
+    })
+  })
+
+  console.log(`------------------ Notion Typescript clients have been generated in ${sdkPath} ------------------`)
+}
