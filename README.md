@@ -15,8 +15,8 @@ Generates an easy to use and fully typed API client to access and modify the dat
 
 Create complex calculations and intelligent automations for your Notion Databases using Typescript, ensuring complete type safety. Use automagically generated SDK with Custom Types per Database to safely read from and write to your Notion databases
 
-- Use Notion as your Database / Backoffice and use **notion-ts-client** to generate custom Typescript SDKs for your code. Ensure complete type equality between your backend and frontend.
 - Use **notion-ts-client** with Webhooks for building powerful automations and formulas (see example below)
+- Use Notion as your Database / Backoffice and use **notion-ts-client** to generate custom Typescript SDKs for your code. Ensure complete type equality between your backend and frontend.
 
 <br/>
 
@@ -74,14 +74,15 @@ ALL of the above code is FULLY TYPED, meaning that every property has a custom t
 
 Visit: https://www.notion.so/my-integrations
 
-Click "Create a new integration" and give it any name you like, e.g. `NotionSDK`.
+Click `Create a new integration` and give it any name you like, e.g. `NotionSDK`.
 
 ### Add databases to your integration
 
 Add the databases you want to work with to your integration in Notion:
 
-1. Go to the database page in Notion, click `...` at the top right corner.
-2. `...` => `Add connections` => The name of your integration
+1. Go to the database page in Notion
+2. Click `...` at the top right corner
+3. `...` => `Add connections` => The name of your integration
 
 ### Generate config file based on your integrations
 
@@ -95,7 +96,7 @@ A config file will be generated for all the databases you added to your integrat
 
 Here is an example of a config file:
 
-```json
+```ts
 // notion-ts-client.config.json
 {
   "databases": {
