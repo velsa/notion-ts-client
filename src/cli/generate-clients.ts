@@ -1,3 +1,4 @@
+import chalk from 'chalk'
 import fs from 'fs'
 import path from 'path'
 import {
@@ -12,9 +13,10 @@ import {
 import { SearchResponse } from '../output/core/types/notion-api.types'
 import { createCustomConfigFromNotionDatabases, normalizeTypeName } from '../parsers'
 import { ConfigFile } from '../types'
+import { log, logSuccess } from './log'
 
 export function generateClients(sdkPath: string, notionResJSON: SearchResponse, userConfigData: ConfigFile) {
-  console.log('------------------ GENERATING NOTION TYPESCRIPT CLIENT(S) ------------------')
+  // log('Generating Notion Typescript Client(s) (SDKs)')
 
   if (fs.existsSync(sdkPath)) {
     fs.rmSync(sdkPath, { recursive: true })
@@ -28,6 +30,7 @@ export function generateClients(sdkPath: string, notionResJSON: SearchResponse, 
     const dbTypeName = normalizeTypeName(dbConfig.varName)
     const originDir = path.join(process.argv[1].match(/^(.*)\/[^/]+$/)[1], '../src')
 
+    log(`Generating SDK for database: ${dbConfig.name} in ${chalk.yellow(dbPath)}`)
     createTypesFile({
       dbPath,
       fileName: 'types.ts',
@@ -70,5 +73,5 @@ export function generateClients(sdkPath: string, notionResJSON: SearchResponse, 
     })
   })
 
-  console.log(`------------------ Notion Typescript clients have been generated in ${sdkPath} ------------------`)
+  logSuccess(`Notion Typescript clients have been generated in ${chalk.yellow(sdkPath)}`)
 }

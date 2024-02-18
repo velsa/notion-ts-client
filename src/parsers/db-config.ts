@@ -1,3 +1,4 @@
+import { log, logWarn } from '../cli/log'
 import {
   DatabaseObjectResponse,
   DatabasePropertyConfigResponse,
@@ -9,13 +10,15 @@ import { normalizeProperty } from './normalize'
 export const DEFAULT_READONLY_PROPERTIES = ['id', 'created_time', 'last_edited_time', 'last_edited_by', 'created_by']
 
 export function createConfigFromNotionDatabases(res: SearchResponse): ConfigFileDatabasesConfig {
+  log('Parsing Notion databases into config...')
+
   const databases = res.results.filter((r) => r.object === 'database')
   const dbConfigObject = databases.reduce((dbConfig, db) => {
     const { id, title, properties } = db as DatabaseObjectResponse
     const dbName = title[0]?.plain_text
 
     if (!dbName) {
-      console.warn(`Could not parse database name for database with id: ${id}`)
+      logWarn(`Could not parse database name for database with id: ${id}`)
 
       return dbConfig
     }

@@ -1,12 +1,14 @@
+import chalk from 'chalk'
 import fs from 'fs'
 import { mergeConfigs } from '../parsers'
 import { ConfigFile, ConfigFileDatabasesConfig } from '../types'
+import { log, logError, logSuccess } from './log'
 
 export function updateConfigFile(configFile: string, dbConfigData: ConfigFileDatabasesConfig) {
-  console.log(`------------------ UPDATING ${configFile} ------------------`)
+  // log(`Updating config file ${chalk.yellow(configFile)}`)
 
   if (!fs.existsSync(configFile)) {
-    console.error(`File ${configFile} does not exists. Please generate it with 'init' command.`)
+    logError(`File ${chalk.yellow(configFile)} does not exists. Please generate it with 'init' command.`)
     process.exit(1)
   }
 
@@ -18,11 +20,11 @@ export function updateConfigFile(configFile: string, dbConfigData: ConfigFileDat
   const numChanges = Object.keys(changes).length
 
   if (numChanges === 0) {
-    console.log('No changes detected. Not updating config file.')
+    log('No changes detected. Not updating the config file.')
   } else {
     fs.writeFileSync(configFile, JSON.stringify(userConfigData, null, 2))
-    console.log('Updated config file:', configFile)
-    console.log('Changes:', JSON.stringify(changes, null, 2))
+    logSuccess('Updated config file.')
+    log('Changes:', JSON.stringify(changes, null, 2))
   }
 
   return userConfigData
@@ -34,7 +36,8 @@ export function readUserConfig(configPath: string) {
   try {
     userConfig = fs.readFileSync(configPath, 'utf8')
   } catch (err) {
-    console.error(`Failed reading config file ${configPath}`, err)
+    logError(`Failed reading ${chalk.yellow(configPath)}.`)
+    console.error(err)
     process.exit(1)
   }
 
@@ -43,7 +46,8 @@ export function readUserConfig(configPath: string) {
   try {
     userConfigData = JSON.parse(userConfig)
   } catch (err) {
-    console.error(`Error parsing ${configPath}:`, err)
+    logError(`Error parsing ${chalk.yellow(configPath)}.`)
+    console.error(err)
     process.exit(1)
   }
 

@@ -29,7 +29,8 @@
     "dev": "npx tsx --inspect src/index.ts",
     "build": "tsup src/index.ts --format cjs,esm --clean --out-dir dist",
     "release": "pnpm run build && changeset publish",
-    "test": "npx jest --setupFiles dotenv/config"
+    "test": "npx jest --setupFiles dotenv/config",
+    "generate:afisha": "pnpm run dev -- generate"
   },
   "dependencies": {
     "@notionhq/client": "^2.2.14",

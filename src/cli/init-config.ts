@@ -1,14 +1,16 @@
+import chalk from 'chalk'
 import fs from 'fs'
 import { DEFAULT_READONLY_PROPERTIES, createConfigFromNotionDatabases } from '../parsers'
 import { ConfigFileDatabasesConfig } from '../types'
+import { log, logError, logSuccess } from './log'
 import { fetchNotionDatabases } from './notion-api'
 import { ProgramOptions } from './types'
 
 export async function initConfigFile(options: ProgramOptions) {
-  console.log(`------------------ GENERATING ${options.config} ------------------`)
+  log(`Generating config file ${chalk.yellow(options.config)}`)
 
   if (fs.existsSync(options.config)) {
-    console.error(`File ${options.config} already exists.`)
+    logError('Config file already exists! Not overwriting.')
     process.exit(1)
   }
 
@@ -21,13 +23,14 @@ export async function initConfigFile(options: ProgramOptions) {
     databases: dbConfigData,
   }
 
+  log(`Saving databases config...`)
   fs.writeFileSync(options.config, JSON.stringify(fileConfig, null, 2))
-  console.log('Generated config file:', options.config)
-  console.log(
-    'You can now edit this file and change the "varName" and "readOnly" properties for databases and properties to your liking.',
-  )
-  console.log(
-    "When you run 'generate' command, your Typescript Client will be generated with custom var names and types as specified in the config file.",
+  logSuccess('Config file generated!')
+  log(
+    `\nYou can now edit this file and change the ${chalk.yellow('"varName"')} and ${chalk.yellow('"readOnly"')} ` +
+      `config values for databases and properties to your liking. ` +
+      `When you run the ${chalk.yellow('generate')} command – ` +
+      `your Typescript Client will be generated with custom var names and types as specified in the config file.`,
   )
 }
 

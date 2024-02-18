@@ -1,12 +1,11 @@
 import { Client } from '@notionhq/client'
 import { SearchResponse } from '../output/core/types/notion-api.types'
+import { log, logError } from './log'
 
 export async function fetchNotionDatabases(secret: string): Promise<SearchResponse> {
-  // ---
-  // Read the response from Notion API
   const notion = new Client({ auth: secret })
 
-  console.log('------------------ READING NOTION DATABASES ------------------')
+  log('Fetching databases from Notion...')
 
   try {
     return await notion.search({
@@ -19,7 +18,7 @@ export async function fetchNotionDatabases(secret: string): Promise<SearchRespon
     console.error(error)
 
     if (error.code === 401) {
-      console.error('Make sure your Notion API secret is correct.')
+      logError('Make sure your Notion API secret is correct.')
     }
 
     process.exit(1)
