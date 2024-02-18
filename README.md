@@ -15,7 +15,7 @@ Generates an easy to use and fully typed API client to access and modify the dat
 
 Create complex calculations and intelligent automations for your Notion Databases using Typescript, ensuring complete type safety. Use automagically generated SDK with Custom Types per Database to safely read from and write to your Notion databases
 
-- Use Notion as your Database / Backoffice and use **notion-ts-client** to generate custom Typescript SDKs for your backend. Ensure complete type equality between your back and front.
+- Use Notion as your Database / Backoffice and use **notion-ts-client** to generate custom Typescript SDKs for your code. Ensure complete type equality between your backend and frontend.
 - Use **notion-ts-client** with Webhooks for building powerful automations and formulas (see example below)
 
 <br/>
