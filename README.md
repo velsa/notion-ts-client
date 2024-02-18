@@ -153,6 +153,8 @@ NOTION_TS_CLIENT_CONFIG_PATH=./notion-ts-client.config.json
 NOTION_TS_CLIENT_SDK_PATH=./notion-sdk
 ```
 
+<br/>
+
 ## Using notion-ts-client with webhooks
 
 To get a webhook every time the data in your Notion database changes you can use this service:
@@ -183,6 +185,8 @@ export default {
   },
 }
 ```
+
+<br/>
 
 ## Important notes for usage in production:
 
