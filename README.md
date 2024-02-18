@@ -86,7 +86,7 @@ Add the databases you want to work with to your integration in Notion:
 
 ### Generate config file based on your integrations
 
-Run the **init** command:
+Run the `init` command:
 
 ```sh
 npx notion-ts-client init --secret <notion_secret>
@@ -94,7 +94,7 @@ npx notion-ts-client init --secret <notion_secret>
 
 A config file will be generated for all the databases you added to your integration. Generated configuration reflects your database and its properties. You can read about the structure of Notion databases and the available property types <a href="https://developers.notion.com/docs/working-with-databases#structure" target="_blank">in the Notion docs</a>
 
-Here is an example of a config file:
+Here is an example of a generated config file:
 
 ```ts
 // notion-ts-client.config.json
@@ -109,7 +109,7 @@ Here is an example of a config file:
         "C%3DP_": {                 // Notion property ID (don't change)
           "name": "Type",           // Notion property name (don't change)
           "type": "multi_select",   // Notion property type (don't change)
-          "varName": "type",        // variable name to be generated in SDK
+          "varName": "type",        // variable name to be generated in the SDK
           "readOnly": false         // read only properties will not be available in DTOs used for writes
         },
         "%3D%3DNA": {
@@ -131,9 +131,9 @@ Once you are done reviewing the config file and editing the `varName` and `readO
 
 ### Generate Typescript Clients (SDK)
 
-When you run the **generate** command, **notion-ts-client** automatically updates your config file based on the current database configuration in Notion and generates Typescript Clients (SDKs). Those clients export custom Typescript types and API methods for each database.
+When you run the `generate` command, **notion-ts-client** automatically updates your config file based on the current database configuration in Notion and generates Typescript Clients (SDKs). Those clients export custom Typescript types and API methods for each database.
 
-Run the **generate** command:
+Run the `generate` command:
 
 ```sh
 npx notion-ts-client generate --secret <notion_secret> --sdk <path_to_sdk>
@@ -177,7 +177,7 @@ export default {
     if (request.method === 'POST') {
       const payload: OnlineEventsResponse = await request.json()
       const props = new OnlineEventsResponseDTO(payload).properties
-      // process updated page properties...
+      // process page properties...
       // update notion page with new properties
     }
   },
@@ -186,11 +186,11 @@ export default {
 
 ## Important notes for usage in production:
 
-If a property in Notion has been **renamed** - simply generate your client sdk again and all your types and properties will be up to date. Your production code will not be affected by this change, since under the hood all API calls use property IDs.
+If a property in your Notion database has been **renamed** - your production code will not be affected, since under the hood all API calls use property IDs.
 
-If a property in Notion has been **removed** or its **type has been changed** - this might present a problem for the production code, so be careful when you chage properties in your Notion database.
+If a property in Notion has been **removed** or its **type has been changed** - this might present a problem for the production code. The solution is: before removing a property from Notion database or changing its type – make sure that your production code will not fail when this change is applied in Notion.
 
-Also, you will get a detailed update on the changes made in Notion once you generate your client sdk. You will also likely get Typescript errors in your code, since the types have changed. Which presents an excelent opportunity to adapt your code to the changes! 😎
+Next time you run the `generate` command, you will get an updated config file and Client SDK, reflecting all the changes in your Notion databases. You might also see some Typescript errors in your code, since the types have changed. Which presents an excelent opportunity to adapt your code to the changes! 😎
 
 ---
 
