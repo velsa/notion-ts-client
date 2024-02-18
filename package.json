@@ -26,7 +26,7 @@
     "init": "./dist/index.js"
   },
   "scripts": {
-    "dev": "npx tsx --inspect src/index.ts",
+    "dev": "NOTION_TS_CLIENT_DEBUG=true npx tsx --inspect src/index.ts",
     "build": "tsup src/index.ts --format cjs,esm --clean --out-dir dist",
     "release": "pnpm run build && changeset publish",
     "test": "npx jest --setupFiles dotenv/config",

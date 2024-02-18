@@ -29,7 +29,7 @@ export function generateClients(sdkPath: string, notionResJSON: SearchResponse, 
     const dbPath = path.join(sdkPath, 'dbs', dbConfig.pathName)
     const dbTypeName = normalizeTypeName(dbConfig.varName)
     const runDir = process.argv[1].match(/^(.*)\/[^/]+$/)[1]
-    const originDir = process.env.NODE_ENV === 'development' ? path.join(runDir, '../src') : path.join(runDir, 'src')
+    const originDir = path.join(runDir, 'src')
 
     log(`Generating SDK for database: ${dbConfig.name} in ${chalk.yellow(dbPath)}`)
     createTypesFile({
