@@ -33,6 +33,10 @@ export function generateClients(sdkPath: string, notionResJSON: SearchResponse, 
       ? path.join(runDir, '../src')
       : path.join(runDir, '../notion-ts-client/src')
 
+    console.log('runDir', runDir)
+    console.log('originDir', originDir)
+    console.log('__dirname', __dirname)
+
     log(`Generating SDK for database: ${dbConfig.name} in ${chalk.yellow(dbPath)}`)
     createTypesFile({
       dbPath,
@@ -76,5 +80,5 @@ export function generateClients(sdkPath: string, notionResJSON: SearchResponse, 
     })
   })
 
-  logSuccess(`Notion Typescript clients have been generated in ${chalk.yellow(sdkPath)}`)
+  logSuccess(`\nNotion Typescript clients have been generated in ${chalk.yellow(sdkPath)}`)
 }
