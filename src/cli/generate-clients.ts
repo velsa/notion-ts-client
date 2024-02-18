@@ -33,9 +33,8 @@ export function generateClients(sdkPath: string, notionResJSON: SearchResponse, 
       ? path.join(runDir, '../src')
       : path.join(runDir, '../../notion-ts-client/src')
 
-    console.error('runDir', runDir)
-    console.error('originDir', originDir)
-    console.error('__dirname', __dirname)
+    // console.error('runDir', runDir)
+    // console.error('originDir', originDir)
 
     log(`Generating SDK for database: ${dbConfig.name} in ${chalk.yellow(dbPath)}`)
     createTypesFile({
