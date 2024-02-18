@@ -32,7 +32,9 @@ describe('NotionSDK: AfishaDatabase', () => {
 
   test('NotionSDK: query returns results', async () => {
     const response = await db.query({
-      filter: { city: { equals: 'Герцлия' } },
+      filter: {
+        and: [{ city: { equals: 'Герцлия' } }, { cost: { contains: 'бесплатно' } }],
+      },
       sorts: [{ property: 'name', direction: 'ascending' }],
     })
 
