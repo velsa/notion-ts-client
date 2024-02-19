@@ -150,7 +150,7 @@ You can also configure your Notion secret and other cli options via environment 
 ```sh
 NOTION_TS_CLIENT_NOTION_SECRET=<notion_secret>
 NOTION_TS_CLIENT_CONFIG_PATH=./notion-ts-client.config.json
-NOTION_TS_CLIENT_SDK_PATH=./notion-sdk
+NOTION_TS_CLIENT_SDK_PATH=./src/notion-sdk
 ```
 
 <br/>

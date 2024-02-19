@@ -14,10 +14,11 @@ export abstract class GenericDatabaseClass<
 > {
   private notionApiHeaders: Record<string, string>
   // Using simple rate limiting (https://github.com/xavi-/node-simple-rate-limiter)
-  private rateLimitedFetch = rateLimit(fetch).to(3).per(1000)
-  abstract notionDatabaseId: string
-  abstract queryRemapFilter(filter: Record<string, unknown>): Record<string, unknown>
-  abstract queryRemapSorts(sorts: Record<string, string>[]): Record<string, string>[]
+  private rateLimitedFetch = rateLimit.promise(fetch).to(3).per(1000)
+  /** @private */
+  protected abstract notionDatabaseId: string
+  protected abstract queryRemapFilter(filter: Record<string, unknown>): Record<string, unknown>
+  protected abstract queryRemapSorts(sorts: Record<string, string>[]): Record<string, string>[]
 
   private notionPageApiURL(pageId) {
     return `https://api.notion.com/v1/pages/${pageId}`

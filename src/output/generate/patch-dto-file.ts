@@ -15,7 +15,7 @@ export function createPatchDTOFile(opts: {
   const code = getDTOFileCode(opts.propsConfig)
   const content = `${imports}
 
-type ${opts.dbTypeName}PropertiesPatch = {
+export type ${opts.dbTypeName}PropertiesPatch = {
 ${type}}
   
 export class ${opts.dbTypeName}PatchDTO {

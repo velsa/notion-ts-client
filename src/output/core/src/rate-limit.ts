@@ -1,6 +1,9 @@
+/* eslint-disable no-extra-semi */
+/* eslint-disable @typescript-eslint/no-explicit-any */ /* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable prefer-rest-params */
 import { EventEmitter } from 'events'
 
-export type RateLimiter = EventEmitter & {
+type ExtendedEventEmitter = Partial<EventEmitter> & {
   to: (count: number) => any
   per: (time: number) => any
   evenly: (evenly: boolean) => any
@@ -8,27 +11,30 @@ export type RateLimiter = EventEmitter & {
   maxQueueLength: (max: number) => any
 }
 
+export type RateLimiter<T> = ExtendedEventEmitter | T
+
 function reEmit(oriEmitter, newEmitter) {
-  var oriEmit = oriEmitter.emit,
+  const oriEmit = oriEmitter.emit,
     newEmit = newEmitter.emit
+
   oriEmitter.emit = function () {
     newEmit.apply(newEmitter, arguments)
     oriEmit.apply(oriEmitter, arguments)
   }
 }
 
-function limit(fn, ctx?): RateLimiter {
-  var _to = 1,
+function limit<T extends (...args: any) => any>(fn: T, ctx?: any) {
+  let _to = 1,
     _per = -1,
     _fuzz = 0,
     _evenly = false,
     _maxQueueLength = 5000
-  var pastExecs = [],
-    queue = [],
-    timer
+  let pastExecs = [],
+    timer: any = null
+  const queue = []
 
-  var pump = function () {
-    var now = Date.now()
+  function pump() {
+    const now = Date.now()
 
     pastExecs = pastExecs.filter(function (time) {
       return now - time < _per
@@ -37,8 +43,9 @@ function limit(fn, ctx?): RateLimiter {
     while (pastExecs.length < _to && queue.length > 0) {
       pastExecs.push(now)
 
-      var tmp = queue.shift()
-      var rtn = fn.apply(ctx, tmp.args)
+      const tmp = queue.shift()
+      const rtn = fn.apply(ctx, tmp.args)
+
       tmp.emitter.emit('limiter-exec', rtn)
 
       if (rtn && rtn.emit) {
@@ -54,21 +61,23 @@ function limit(fn, ctx?): RateLimiter {
       timer = null
     } else if (queue.length <= 0) {
       // Clear pastExec array when queue is empty asap
-      var lastIdx = pastExecs.length - 1
+      const lastIdx = pastExecs.length - 1
+
       timer = setTimeout(pump, _per - (now - pastExecs[lastIdx]))
     } else if (_per > -1) {
-      var delay = _evenly ? _per / _to : _per - (now - pastExecs[0])
+      let delay = _evenly ? _per / _to : _per - (now - pastExecs[0])
+
       delay += (delay * _fuzz * Math.random()) | 0
       timer = setTimeout(pump, delay)
     }
   }
 
-  var limiter = function (...args) {
+  const limiter = function (...args) {
     if (_maxQueueLength <= queue.length) {
       throw new Error(`Max queue length (${_maxQueueLength}) exceeded`)
     }
 
-    var emitter = new EventEmitter()
+    const emitter = new EventEmitter()
 
     queue.push({ emitter, args })
 
@@ -76,66 +85,88 @@ function limit(fn, ctx?): RateLimiter {
       timer = setImmediate(pump)
     }
 
-    return emitter
+    return emitter as ExtendedEventEmitter
   }
+
   Object.defineProperty(limiter, 'length', { value: fn.length }) // Match fn signature
 
-  limiter['to'] = function (count) {
+  limiter.to = function (count) {
     _to = count || 1
-    return limiter
+
+    return limiter as ExtendedEventEmitter
   }
-  limiter['per'] = function (time) {
+
+  limiter.per = function (time) {
     _per = time || -1
-    return limiter
-  }
-  limiter['evenly'] = function (evenly) {
-    _evenly = evenly == null || evenly
-    return limiter
-  }
-  limiter['withFuzz'] = function (fuzz) {
-    _fuzz = fuzz || 0.1
-    return limiter
-  }
-  limiter['maxQueueLength'] = function (max) {
-    _maxQueueLength = max
+
     return limiter
   }
 
-  return limiter as unknown as RateLimiter
+  limiter.evenly = function (evenly) {
+    _evenly = evenly == null || evenly
+
+    return limiter
+  }
+
+  limiter.withFuzz = function (fuzz) {
+    _fuzz = fuzz || 0.1
+
+    return limiter
+  }
+
+  limiter.maxQueueLength = function (max) {
+    _maxQueueLength = max
+
+    return limiter
+  }
+
+  return limiter as ExtendedEventEmitter
 }
 
-limit.promise = function (promiser, ctx) {
+limit.promise = function <T extends (...args: any) => Promise<any>>(promiser: T, ctx?: any) {
   const limiter = limit(promiser, ctx)
 
   function wrapper(...args) {
     return new Promise(function (resolve, reject) {
-      ;(limiter as unknown as (...args) => any)(...args).on('limiter-exec', (rtn) => rtn.then(resolve).catch(reject))
+      ;((limiter as unknown as T)(...args) as unknown as EventEmitter).on('limiter-exec', (rtn) =>
+        rtn.then(resolve).catch(reject),
+      )
     })
   }
+
   Object.defineProperty(wrapper, 'length', { value: promiser.length }) // Match promiser signature
 
   wrapper.to = function (count) {
     limiter['to'](count)
-    return wrapper
-  }
-  wrapper.per = function (time) {
-    limiter['per'](time)
-    return wrapper
-  }
-  wrapper.evenly = function (evenly) {
-    limiter['evenly'](evenly)
-    return wrapper
-  }
-  wrapper.withFuzz = function (fuzz) {
-    limiter['fuzz'](fuzz)
-    return wrapper
-  }
-  wrapper.maxQueueLength = function (max) {
-    limiter['maxQueueLength'](max)
-    return wrapper
+
+    return wrapper as ExtendedEventEmitter
   }
 
-  return wrapper
+  wrapper.per = function (time) {
+    limiter['per'](time)
+
+    return wrapper as ExtendedEventEmitter
+  }
+
+  wrapper.evenly = function (evenly) {
+    limiter['evenly'](evenly)
+
+    return wrapper as ExtendedEventEmitter
+  }
+
+  wrapper.withFuzz = function (fuzz) {
+    limiter['fuzz'](fuzz)
+
+    return wrapper as ExtendedEventEmitter
+  }
+
+  wrapper.maxQueueLength = function (max) {
+    limiter['maxQueueLength'](max)
+
+    return wrapper as ExtendedEventEmitter
+  }
+
+  return wrapper as ExtendedEventEmitter
 }
 
 export default limit

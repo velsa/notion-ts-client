@@ -15,15 +15,15 @@ export class ${dbTypeName}Database extends GenericDatabaseClass<
   ${dbTypeName}Query,
   ${dbTypeName}QueryResponse
 > {
-  notionDatabaseId: string
-
+  protected notionDatabaseId: string
+  
   constructor(options: DatabaseOptions) {
     super(options)
 
     this.notionDatabaseId = '${dbId}'
   }
 
-  queryRemapFilter(filter: Record<string, unknown>) {
+  protected queryRemapFilter(filter: Record<string, unknown>) {
     const notionFilter = {}
 
     Object.entries(filter).forEach(([key, value]) => {
@@ -49,7 +49,7 @@ export class ${dbTypeName}Database extends GenericDatabaseClass<
     return notionFilter
   }
 
-  queryRemapSorts(sorts: Record<string, string>[]) {
+  protected queryRemapSorts(sorts: Record<string, string>[]) {
     return sorts?.map((sort) => {
       if ('property' in sort) {
         return {
