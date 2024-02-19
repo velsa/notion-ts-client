@@ -31,10 +31,11 @@ export function generateClients(sdkPath: string, notionResJSON: SearchResponse, 
     const runDir = process.argv[1].match(/^(.*)\/[^/]+$/)[1]
     const originDir = process.env.NOTION_TS_CLIENT_DEBUG
       ? path.join(runDir, '../src')
-      : path.join(runDir, '../../notion-ts-client/src')
+      : path.join(runDir, '../notion-ts-client/src')
 
-    // console.error('runDir', runDir)
-    // console.error('originDir', originDir)
+    console.error('runDir', runDir)
+    console.error('originDir', originDir)
+    // console.error('originDir', __dirname)
 
     log(`Generating SDK for database: ${dbConfig.name} in ${chalk.yellow(dbPath)}`)
     createTypesFile({
