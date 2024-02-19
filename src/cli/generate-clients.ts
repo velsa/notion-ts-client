@@ -29,12 +29,10 @@ export function generateClients(sdkPath: string, notionResJSON: SearchResponse, 
     const dbPath = path.join(sdkPath, 'dbs', dbConfig.pathName)
     const dbTypeName = normalizeTypeName(dbConfig.varName)
     const runDir = process.argv[1].match(/^(.*)\/[^/]+$/)[1]
-    const originDir = process.env.NOTION_TS_CLIENT_DEBUG
-      ? path.join(runDir, '../src')
-      : path.join(runDir, '../notion-ts-client/src')
+    const originDir = buildOriginDir(runDir)
 
-    console.error('runDir', runDir)
-    console.error('originDir', originDir)
+    // console.error('runDir', runDir)
+    // console.error('originDir', originDir)
     // console.error('originDir', __dirname)
 
     log(`Generating SDK for database: ${dbConfig.name} in ${chalk.yellow(dbPath)}`)
@@ -81,4 +79,21 @@ export function generateClients(sdkPath: string, notionResJSON: SearchResponse, 
   })
 
   logSuccess(`\nNotion Typescript clients have been generated in ${chalk.yellow(sdkPath)}`)
+}
+
+function buildOriginDir(runDir: string) {
+  // running locally
+  if (process.env.NOTION_TS_CLIENT_DEBUG) {
+    return path.join(runDir, '../src')
+  }
+
+  const parts = runDir.split('/')
+
+  if (parts[parts.length - 2] === 'notion-ts-client') {
+    // pnpx
+    return path.join(runDir, '../src')
+  } else {
+    // npx
+    return path.join(runDir, '../notion-ts-client/src')
+  }
 }
