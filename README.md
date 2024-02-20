@@ -76,6 +76,8 @@ Visit: https://www.notion.so/my-integrations
 
 Click `Create a new integration` and give it any name you like, e.g. `NotionSDK`.
 
+Copy the secret token.
+
 ### Add databases to your integration
 
 Add the databases you want to work with to your integration in Notion:
@@ -153,6 +155,14 @@ NOTION_TS_CLIENT_CONFIG_PATH=./notion-ts-client.config.json
 NOTION_TS_CLIENT_SDK_PATH=./src/notion-sdk
 ```
 
+Now you can simply run
+
+```sh
+npx notion-ts-client generate
+```
+
+to regenerate your SDKs whenever you need to reflect in your code the changes that were made in Notion.
+
 <br/>
 
 ## Using notion-ts-client with webhooks
@@ -161,7 +171,7 @@ To get a webhook every time the data in your Notion database changes you can use
 
 https://notion.hostedhooks.com/
 
-It's a paid service and it costs $10 a month. But it is way cheaper than services like Zapier and will give you maximum level of control over your data.
+It's a paid service and it costs $10 a month. But it is way better than services like Zapier and will give you maximum level of control over your data.
 
 You can utilize **notion-ts-client** by simply calling `new YourCustomResponseDTO(payload)` in your webhook handler. This way you will get all the properties of a changed page with types and an easy to use API.
 
