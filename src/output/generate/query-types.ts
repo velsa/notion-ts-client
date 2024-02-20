@@ -144,7 +144,7 @@ TimestampLastEditedTimeFilter,
   )
 }
 
-function getImportType(type) {
+function getImportType(type: string) {
   switch (type) {
     case 'select':
     case 'multi_select':

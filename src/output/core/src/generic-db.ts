@@ -7,8 +7,11 @@ export type DatabaseOptions = {
 
 export abstract class GenericDatabaseClass<
   DatabaseResponse,
-  DatabasePatchDTO,
-  DatabaseQuery,
+  DatabasePatchDTO extends { data: Record<string, unknown> },
+  DatabaseQuery extends {
+    filter?: Record<string, unknown>
+    sorts?: Record<string, string>[]
+  },
   DatabaseQueryResponse,
   // DatabaseWebHookOptions,
 > {
@@ -17,10 +20,10 @@ export abstract class GenericDatabaseClass<
   private rateLimitedFetch = rateLimit.promise(fetch).to(3).per(1000)
   /** @private */
   protected abstract notionDatabaseId: string
-  protected abstract queryRemapFilter(filter: Record<string, unknown>): Record<string, unknown>
-  protected abstract queryRemapSorts(sorts: Record<string, string>[]): Record<string, string>[]
+  protected abstract queryRemapFilter(filter?: Record<string, unknown>): Record<string, unknown> | undefined
+  protected abstract queryRemapSorts(sorts?: Record<string, string>[]): Record<string, string>[] | undefined
 
-  private notionPageApiURL(pageId) {
+  private notionPageApiURL(pageId: string) {
     return `https://api.notion.com/v1/pages/${pageId}`
   }
 

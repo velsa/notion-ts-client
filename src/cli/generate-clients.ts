@@ -28,8 +28,7 @@ export function generateClients(sdkPath: string, notionResJSON: SearchResponse, 
   Object.entries(userConfigData.databases).map(([dbId, dbConfig]) => {
     const dbPath = path.join(sdkPath, 'dbs', dbConfig.pathName)
     const dbTypeName = normalizeTypeName(dbConfig.varName)
-    const runDir = process.argv[1].match(/^(.*)\/[^/]+$/)[1]
-    const originDir = buildOriginDir(runDir)
+    const originDir = buildOriginDir(process.argv[1])
 
     // console.error('runDir', runDir)
     // console.error('originDir', originDir)
@@ -81,7 +80,17 @@ export function generateClients(sdkPath: string, notionResJSON: SearchResponse, 
   logSuccess(`\nNotion Typescript clients have been generated in ${chalk.yellow(sdkPath)}`)
 }
 
-function buildOriginDir(runDir: string) {
+function buildOriginDir(appPath?: string) {
+  if (!appPath) {
+    throw new Error("Can' t locate origin directory. Make sure you run the cli with npx or pnpx")
+  }
+
+  const runDir = appPath.match(/^(.*)\/[^/]+$/)?.[1]
+
+  if (!runDir) {
+    throw new Error('Invalid origin directory?! Make sure you run the cli with npx or pnpx')
+  }
+
   // running locally
   if (process.env.NOTION_TS_CLIENT_DEBUG) {
     return path.join(runDir, '../src')

@@ -54,7 +54,7 @@ import { UpdatePageBodyParameters,\n` +
   )
 }
 
-function getImportType(type) {
+function getImportType(type: string) {
   switch (type) {
     case 'title':
     case 'rich_text':

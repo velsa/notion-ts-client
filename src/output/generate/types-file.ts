@@ -48,7 +48,7 @@ import { AFISHA_PROPS_TO_IDS } from './constants'`
   )
 }
 
-function getImportType(type) {
+function getImportType(type: string) {
   switch (type) {
     case 'number':
       return 'NumberPropertyItemObjectResponse'
@@ -113,7 +113,11 @@ function getTypesFileProperties(
   return properties
 }
 
-function getPropertyType(type: string, propConfig: CustomTypesPropertyConfig) {
+function getPropertyType(type: string, propConfig?: CustomTypesPropertyConfig) {
+  if (!propConfig) {
+    throw new Error(`Property config is missing for type: ${type}`)
+  }
+
   const typesUnion = (propConfig: CustomTypesPropertyConfig) =>
     propConfig.options.map(({ name, color }) => `{ id: StringRequest, name: '${name}', color: '${color}' }`).join(' | ')
 

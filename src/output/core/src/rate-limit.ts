@@ -8,19 +8,20 @@ type ExtendedEventEmitter = Partial<EventEmitter> & {
   per: (time: number) => any
   evenly: (evenly: boolean) => any
   withFuzz: (fuzz: number) => any
+  fuzz: (fuzz: number) => any
   maxQueueLength: (max: number) => any
 }
 
 export type RateLimiter<T> = ExtendedEventEmitter | T
 
-function reEmit(oriEmitter, newEmitter) {
+function reEmit(oriEmitter: EventEmitter, newEmitter: EventEmitter) {
   const oriEmit = oriEmitter.emit,
     newEmit = newEmitter.emit
 
   oriEmitter.emit = function () {
-    newEmit.apply(newEmitter, arguments)
-    oriEmit.apply(oriEmitter, arguments)
-  }
+    newEmit.apply(newEmitter, arguments as any)
+    oriEmit.apply(oriEmitter, arguments as any)
+  } as any
 }
 
 function limit<T extends (...args: any) => any>(fn: T, ctx?: any) {
@@ -29,9 +30,9 @@ function limit<T extends (...args: any) => any>(fn: T, ctx?: any) {
     _fuzz = 0,
     _evenly = false,
     _maxQueueLength = 5000
-  let pastExecs = [],
+  let pastExecs: any[] = [],
     timer: any = null
-  const queue = []
+  const queue: any[] = []
 
   function pump() {
     const now = Date.now()
@@ -72,7 +73,7 @@ function limit<T extends (...args: any) => any>(fn: T, ctx?: any) {
     }
   }
 
-  const limiter = function (...args) {
+  const limiter = function (...args: any) {
     if (_maxQueueLength <= queue.length) {
       throw new Error(`Max queue length (${_maxQueueLength}) exceeded`)
     }
@@ -90,43 +91,43 @@ function limit<T extends (...args: any) => any>(fn: T, ctx?: any) {
 
   Object.defineProperty(limiter, 'length', { value: fn.length }) // Match fn signature
 
-  limiter.to = function (count) {
+  limiter.to = function (count: any) {
     _to = count || 1
 
-    return limiter as ExtendedEventEmitter
+    return limiter as unknown as ExtendedEventEmitter
   }
 
-  limiter.per = function (time) {
+  limiter.per = function (time: number) {
     _per = time || -1
 
-    return limiter
+    return limiter as unknown as ExtendedEventEmitter
   }
 
-  limiter.evenly = function (evenly) {
+  limiter.evenly = function (evenly: boolean) {
     _evenly = evenly == null || evenly
 
-    return limiter
+    return limiter as unknown as ExtendedEventEmitter
   }
 
-  limiter.withFuzz = function (fuzz) {
+  limiter.withFuzz = function (fuzz: number) {
     _fuzz = fuzz || 0.1
 
-    return limiter
+    return limiter as unknown as ExtendedEventEmitter
   }
 
-  limiter.maxQueueLength = function (max) {
+  limiter.maxQueueLength = function (max: number) {
     _maxQueueLength = max
 
-    return limiter
+    return limiter as unknown as ExtendedEventEmitter
   }
 
-  return limiter as ExtendedEventEmitter
+  return limiter as unknown as ExtendedEventEmitter
 }
 
 limit.promise = function <T extends (...args: any) => Promise<any>>(promiser: T, ctx?: any) {
   const limiter = limit(promiser, ctx)
 
-  function wrapper(...args) {
+  function wrapper(...args: any) {
     return new Promise(function (resolve, reject) {
       ;((limiter as unknown as T)(...args) as unknown as EventEmitter).on('limiter-exec', (rtn) =>
         rtn.then(resolve).catch(reject),
@@ -136,37 +137,37 @@ limit.promise = function <T extends (...args: any) => Promise<any>>(promiser: T,
 
   Object.defineProperty(wrapper, 'length', { value: promiser.length }) // Match promiser signature
 
-  wrapper.to = function (count) {
+  wrapper.to = function (count: number) {
     limiter['to'](count)
 
-    return wrapper as ExtendedEventEmitter
+    return wrapper as unknown as ExtendedEventEmitter
   }
 
-  wrapper.per = function (time) {
+  wrapper.per = function (time: number) {
     limiter['per'](time)
 
-    return wrapper as ExtendedEventEmitter
+    return wrapper as unknown as ExtendedEventEmitter
   }
 
-  wrapper.evenly = function (evenly) {
+  wrapper.evenly = function (evenly: boolean) {
     limiter['evenly'](evenly)
 
-    return wrapper as ExtendedEventEmitter
+    return wrapper as unknown as ExtendedEventEmitter
   }
 
-  wrapper.withFuzz = function (fuzz) {
+  wrapper.withFuzz = function (fuzz: number) {
     limiter['fuzz'](fuzz)
 
-    return wrapper as ExtendedEventEmitter
+    return wrapper as unknown as ExtendedEventEmitter
   }
 
-  wrapper.maxQueueLength = function (max) {
+  wrapper.maxQueueLength = function (max: number) {
     limiter['maxQueueLength'](max)
 
-    return wrapper as ExtendedEventEmitter
+    return wrapper as unknown as ExtendedEventEmitter
   }
 
-  return wrapper as ExtendedEventEmitter
+  return wrapper as unknown as ExtendedEventEmitter
 }
 
 export default limit

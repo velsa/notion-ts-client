@@ -23,8 +23,12 @@ export class ${dbTypeName}Database extends GenericDatabaseClass<
     this.notionDatabaseId = '${dbId}'
   }
 
-  protected queryRemapFilter(filter: Record<string, unknown>) {
+  protected queryRemapFilter(filter?: Record<string, unknown>) {
     const notionFilter = {}
+
+    if (!filter) {
+      return undefined
+    }
 
     Object.entries(filter).forEach(([key, value]) => {
       if (key === 'and' || key === 'or') {
@@ -49,7 +53,11 @@ export class ${dbTypeName}Database extends GenericDatabaseClass<
     return notionFilter
   }
 
-  protected queryRemapSorts(sorts: Record<string, string>[]) {
+  protected queryRemapSorts(sorts?: Record<string, string>[]) {
+    if (!sorts) {
+      return undefined
+    }
+
     return sorts?.map((sort) => {
       if ('property' in sort) {
         return {

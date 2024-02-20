@@ -1,7 +1,7 @@
 import * as changeCase from 'change-case-all'
 import slugify from 'slugify'
 
-export function normalizeProperty(property, caseType: 'camelCase' | 'kebabCase' = 'camelCase') {
+export function normalizeProperty(property: string, caseType: 'camelCase' | 'kebabCase' = 'camelCase') {
   const propertySlug = slugify(property, {
     strict: true,
     trim: true,
@@ -16,10 +16,10 @@ export function normalizeProperty(property, caseType: 'camelCase' | 'kebabCase' 
   return casedSlug ?? ''
 }
 
-export function normalizeTypeName(varName) {
+export function normalizeTypeName(varName: string) {
   return capitalizeVarName(varName)
 }
 
-export function capitalizeVarName(varName) {
+export function capitalizeVarName(varName: string) {
   return varName.charAt(0).toUpperCase() + varName.slice(1)
 }

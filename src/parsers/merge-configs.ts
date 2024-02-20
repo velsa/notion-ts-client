@@ -92,7 +92,7 @@ export function mergeConfigs(
               }
             : {
                 name: updatedDbConfig.name,
-                varName: originalPropConfig?.varName,
+                varName: originalPropConfig.varName,
                 change: undefined,
                 properties: {
                   [propId]: { name: updatedPropConfig.name, varName: updatedPropConfig.varName, change },
