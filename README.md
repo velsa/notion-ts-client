@@ -189,8 +189,20 @@ export default {
     if (request.method === 'POST') {
       const payload: OnlineEventsResponse = await request.json()
       const props = new OnlineEventsResponseDTO(payload).properties
+
       // process page properties...
+
       // update notion page with new properties
+      const db = new OnlineEventsDatabase({ notionSecret: env.MY_NOTION_SECRET })
+
+      await db.updatePage(
+        payload.id,
+        new OnlineEventsPatchDTO({
+          properties: {
+            // calculated properties
+          },
+        }),
+      )
     }
   },
 }

@@ -1,9 +1,9 @@
-import * as changeCase from 'change-case-all'
+import { makeConstVarName } from '../../parsers'
 import { saveContentToFile } from '../file-utils'
 
 export function createDBFile(opts: { dbPath: string; fileName: string; dbTypeName: string; dbId: string }) {
   const { dbPath, fileName, dbTypeName, dbId } = opts
-  const constVarName = changeCase.constantCase(dbTypeName)
+  const constVarName = makeConstVarName(dbTypeName)
   const content = `import { ${dbTypeName}Response, ${dbTypeName}Query, ${dbTypeName}QueryResponse } from './types'
 import { ${dbTypeName}PatchDTO } from './patch.dto'
 import { GenericDatabaseClass, DatabaseOptions } from '../../core/src/generic-db'

@@ -4,6 +4,10 @@ export function log(...message: string[]) {
   console.log(...message)
 }
 
+export function logSubtle(message: string) {
+  console.log(chalk.gray(message))
+}
+
 export function logWarn(message: string) {
   console.log(chalk.magenta(message))
 }

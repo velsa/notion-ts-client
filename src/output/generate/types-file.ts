@@ -1,3 +1,4 @@
+import { makeConstVarName } from '../../parsers'
 import { ConfigFilePropertiesConfig, CustomTypesPropertiesConfig, CustomTypesPropertyConfig } from '../../types'
 import { saveContentToFile } from '../file-utils'
 import { getQueryFilterTypeImports, getQueryTypes } from './query-types'
@@ -11,28 +12,30 @@ export function createTypesFile(opts: {
   propsConfig: ConfigFilePropertiesConfig
   customPropsConfig: CustomTypesPropertiesConfig
 }) {
-  const imports = getTypesFileImports(opts.propsConfig)
-  const properties = getTypesFileProperties(opts.propsConfig, opts.customPropsConfig)
-  const queryTypes = getQueryTypes(opts.dbTypeName, opts.propsConfig)
+  const { dbPath, fileName, dbTypeName, propsConfig, customPropsConfig } = opts
+  const imports = getTypesFileImports(dbTypeName, propsConfig)
+  const properties = getTypesFileProperties(propsConfig, customPropsConfig)
+  const queryTypes = getQueryTypes(dbTypeName, propsConfig)
   const content = `import { WithOptional, Join, PathsToStringProps } from '../../core/types/helper.types'
 ${imports}
 
-export interface ${opts.dbTypeName}Response extends WithOptional<Omit<DatabaseObjectResponse, 'properties'>, 'title'| 'description'| 'is_inline'| 'url'| 'public_url'> {
+export interface ${dbTypeName}Response extends WithOptional<Omit<DatabaseObjectResponse, 'properties'>, 'title'| 'description'| 'is_inline'| 'url'| 'public_url'> {
   properties: {
 ${properties}
   }
 }
 
-export type ${opts.dbTypeName}Properties = keyof ${opts.dbTypeName}Response['properties']
-export type ${opts.dbTypeName}Path = Join<PathsToStringProps<${opts.dbTypeName}Response>>
+export type ${dbTypeName}Properties = keyof ${dbTypeName}Response['properties']
+export type ${dbTypeName}Path = Join<PathsToStringProps<${dbTypeName}Response>>
 
 ${queryTypes}
 `
 
-  saveContentToFile(content, opts.dbPath, opts.fileName)
+  saveContentToFile(content, dbPath, fileName)
 }
 
-function getTypesFileImports(propsConfig: ConfigFilePropertiesConfig) {
+function getTypesFileImports(dbTypeName: string, propsConfig: ConfigFilePropertiesConfig) {
+  const constVarName = makeConstVarName(dbTypeName)
   const imports = Object.values(propsConfig).map((prop) => getImportType(prop.type))
   const uniqueImports = Array.from(new Set(imports)).sort()
 
@@ -44,7 +47,7 @@ StringRequest,
     ',\n' +
     getQueryFilterTypeImports(propsConfig) +
     `\n} from '../../core/types/notion-api.types'
-import { AFISHA_PROPS_TO_IDS } from './constants'`
+import { ${constVarName}_PROPS_TO_IDS } from './constants'`
   )
 }
 
@@ -114,12 +117,10 @@ function getTypesFileProperties(
 }
 
 function getPropertyType(type: string, propConfig?: CustomTypesPropertyConfig) {
-  if (!propConfig) {
-    throw new Error(`Property config is missing for type: ${type}`)
-  }
-
   const typesUnion = (propConfig: CustomTypesPropertyConfig) =>
-    propConfig.options.map(({ name, color }) => `{ id: StringRequest, name: '${name}', color: '${color}' }`).join(' | ')
+    propConfig?.options
+      .map(({ name, color }) => `{ id: StringRequest, name: '${name}', color: '${color}' }`)
+      .join(' | ')
 
   switch (type) {
     case 'select':

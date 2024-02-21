@@ -67,7 +67,7 @@ export function mergeConfigs(
     const dbChange = (value: MergeDbConfigResult['change']) =>
       (changes[dbId] = {
         name: updatedDbConfig.name,
-        varName: originalDbConfig.varName,
+        varName: originalDbConfig?.varName,
         change: value,
         properties: changes[dbId] ? changes[dbId].properties : {},
       })
@@ -92,7 +92,7 @@ export function mergeConfigs(
               }
             : {
                 name: updatedDbConfig.name,
-                varName: originalPropConfig.varName,
+                varName: originalPropConfig?.varName,
                 change: undefined,
                 properties: {
                   [propId]: { name: updatedPropConfig.name, varName: updatedPropConfig.varName, change },

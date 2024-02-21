@@ -1,4 +1,4 @@
-import * as changeCase from 'change-case-all'
+import { makeConstVarName } from '../../parsers'
 import { ConfigFilePropertiesConfig, CustomTypesPropertiesConfig } from '../../types'
 import { saveContentToFile } from '../file-utils'
 
@@ -10,7 +10,7 @@ export function createConstantsFile(opts: {
   customPropsConfig: CustomTypesPropertiesConfig
 }) {
   const { dbPath, fileName, dbVarName, propsConfig, customPropsConfig } = opts
-  const constVarName = changeCase.constantCase(dbVarName)
+  const constVarName = makeConstVarName(dbVarName)
   const propsWithValues = getPropsWithValues(customPropsConfig)
   let content = `export const ${constVarName}_PROP_VALUES = ${propsWithValues}`
   const propsToIds = getPropsToIds(propsConfig)

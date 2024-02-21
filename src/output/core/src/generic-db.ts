@@ -23,8 +23,8 @@ export abstract class GenericDatabaseClass<
   protected abstract queryRemapFilter(filter?: Record<string, unknown>): Record<string, unknown> | undefined
   protected abstract queryRemapSorts(sorts?: Record<string, string>[]): Record<string, string>[] | undefined
 
-  private notionPageApiURL(pageId: string) {
-    return `https://api.notion.com/v1/pages/${pageId}`
+  private notionPageApiURL(pageId?: string) {
+    return pageId ? `https://api.notion.com/v1/pages/${pageId}` : `https://api.notion.com/v1/pages`
   }
 
   private notionDatabaseQueryURL() {
@@ -32,10 +32,14 @@ export abstract class GenericDatabaseClass<
   }
 
   constructor(opts: DatabaseOptions) {
+    if (!opts.notionSecret) {
+      throw new Error('Notion secret is required')
+    }
+
     // this.firebaseSecret = opts.firebaseSecret;
     this.notionApiHeaders = {
-      'Content-Type': 'application/json',
       Authorization: `Bearer ${opts.notionSecret}`,
+      'Content-Type': 'application/json',
       'Notion-Version': '2022-06-28',
     }
   }
@@ -114,7 +118,9 @@ export abstract class GenericDatabaseClass<
    *
    * @example
    * const patch = new MyDatabasePatchDTO({
-   *  title: 'New title',
+   *  properties: {
+   *    title: 'New title',
+   *  }
    * })
    *
    * await db.updatePage('70b2b25b7f434306b5089486de5efced', patch)
@@ -128,6 +134,41 @@ export abstract class GenericDatabaseClass<
 
     if (!res.ok) {
       throw new Error(`Failed to update page properties: ${res.status} ${res.statusText}`)
+    }
+  }
+
+  /**
+   * Create a page in the Notion database
+   * @param create - Create data. Use your custom DTO type to create the new page data.
+   *
+   * @example
+   *
+   * await db.createPage(new MyDatabasePatchDTO({
+   *  properties: {
+   *   title: 'New title',
+   *  }
+   * }))
+   */
+  async createPage(create: DatabasePatchDTO) {
+    console.log(
+      'Creating page with:',
+      JSON.stringify({
+        parent: { database_id: this.notionDatabaseId },
+        ...create.data,
+      }),
+    )
+
+    const res = await this.rateLimitedFetch(this.notionPageApiURL(), {
+      method: 'POST',
+      headers: this.notionApiHeaders,
+      body: JSON.stringify({
+        parent: { database_id: this.notionDatabaseId },
+        ...create.data,
+      }),
+    })
+
+    if (!res.ok) {
+      throw new Error(`Failed to create page in database: ${res.status} ${res.statusText}`)
     }
   }
 

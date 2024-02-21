@@ -1,7 +1,8 @@
-import { capitalizeVarName, normalizeTypeName } from '../../parsers'
+import { capitalizeVarName, makeConstVarName, normalizeTypeName } from '../../parsers'
 import { ConfigFilePropertiesConfig } from '../../types'
 
 export function getQueryTypes(dbTypeName: string, propsConfig: ConfigFilePropertiesConfig) {
+  const constVarName = makeConstVarName(dbTypeName)
   const customFilterTypes = getCustomFilterTypes(dbTypeName, propsConfig)
   const customPropFilterType = getDBCustomFilterType(dbTypeName, propsConfig)
 
@@ -11,7 +12,7 @@ ${customPropFilterType}
 export type ${dbTypeName}Query = Omit<QueryDatabaseBodyParameters, 'filter' | 'sorts'> & {
   sorts?: Array<
   | {
-      property: keyof typeof AFISHA_PROPS_TO_IDS
+      property: keyof typeof ${constVarName}_PROPS_TO_IDS
       direction: 'ascending' | 'descending'
     }
   | {
