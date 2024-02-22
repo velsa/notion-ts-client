@@ -81,7 +81,7 @@ export abstract class GenericDatabaseClass<
     })
 
     if (!res.ok) {
-      throw new Error(`Failed to query database: ${res.status} ${res.statusText}`)
+      throw new Error(`Failed to query database (${this.notionDatabaseId}): ${res.status} ${res.statusText}`)
     }
 
     return (await res.json()) as DatabaseQueryResponse
@@ -105,7 +105,9 @@ export abstract class GenericDatabaseClass<
     })
 
     if (!res.ok) {
-      throw new Error(`Failed to get page properties: ${res.status} ${res.statusText}`)
+      throw new Error(
+        `Failed to get page (${id}) properties (database id: ${this.notionDatabaseId}): ${res.status} ${res.statusText}`,
+      )
     }
 
     return (await res.json()) as DatabaseResponse
@@ -133,7 +135,9 @@ export abstract class GenericDatabaseClass<
     })
 
     if (!res.ok) {
-      throw new Error(`Failed to update page properties: ${res.status} ${res.statusText}`)
+      throw new Error(
+        `Failed to update page (${id}) properties (database id: ${this.notionDatabaseId}): ${res.status} ${res.statusText}`,
+      )
     }
   }
 
@@ -168,7 +172,33 @@ export abstract class GenericDatabaseClass<
     })
 
     if (!res.ok) {
-      throw new Error(`Failed to create page in database: ${res.status} ${res.statusText}`)
+      throw new Error(`Failed to create page in database (${this.notionDatabaseId}): ${res.status} ${res.statusText}`)
+    }
+  }
+
+  /**
+   * Archive a page in the Notion database.
+   * Archived pages are not deleted, but are hidden from the database view.
+   * The id of the archived page can not be restored.
+   * It is recommended to store the id of the archived page if you plan to restore it later.
+   *
+   * @param id - Notion page id
+   *
+   * @example
+   *
+   * await db.archivePage('70b2b25b7f434306b5089486de5efced')
+   */
+  async archivePage(id: string) {
+    const res = await this.rateLimitedFetch(this.notionPageApiURL(id), {
+      method: 'PATCH',
+      headers: this.notionApiHeaders,
+      body: JSON.stringify({ archived: true }),
+    })
+
+    if (!res.ok) {
+      throw new Error(
+        `Failed to archive page ${id} (database id: ${this.notionDatabaseId}): ${res.status} ${res.statusText}`,
+      )
     }
   }
 

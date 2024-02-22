@@ -5,7 +5,7 @@ Generates an easy to use and fully typed API client to access and modify the dat
 ## Supports:
 
 - Database query with fully typed filters and sorts
-- Fully typed database page methods: `getPage` and `updatePage`
+- Fully typed database page methods (CRUD)
 - Built-in <a href="https://developers.notion.com/reference/request-limits" target="_blank">rate limiting</a> for Notion API calls
 - Quick start with an easy to use CLI: `npx notion-ts-client`
 - Customize variable and type names using JSON config file
