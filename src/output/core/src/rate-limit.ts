@@ -138,31 +138,31 @@ limit.promise = function <T extends (...args: any) => Promise<any>>(promiser: T,
   Object.defineProperty(wrapper, 'length', { value: promiser.length }) // Match promiser signature
 
   wrapper.to = function (count: number) {
-    limiter['to'](count)
+    limiter.to(count)
 
     return wrapper as unknown as ExtendedEventEmitter
   }
 
   wrapper.per = function (time: number) {
-    limiter['per'](time)
+    limiter.per(time)
 
     return wrapper as unknown as ExtendedEventEmitter
   }
 
   wrapper.evenly = function (evenly: boolean) {
-    limiter['evenly'](evenly)
+    limiter.evenly(evenly)
 
     return wrapper as unknown as ExtendedEventEmitter
   }
 
   wrapper.withFuzz = function (fuzz: number) {
-    limiter['fuzz'](fuzz)
+    limiter.fuzz(fuzz)
 
     return wrapper as unknown as ExtendedEventEmitter
   }
 
   wrapper.maxQueueLength = function (max: number) {
-    limiter['maxQueueLength'](max)
+    limiter.maxQueueLength(max)
 
     return wrapper as unknown as ExtendedEventEmitter
   }

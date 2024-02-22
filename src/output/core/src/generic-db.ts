@@ -1,3 +1,4 @@
+import { ListBlockChildrenQueryParameters, ListBlockChildrenResponse } from '../types/notion-api.types'
 import rateLimit from './rate-limit'
 
 export type DatabaseOptions = {
@@ -27,6 +28,12 @@ export abstract class GenericDatabaseClass<
     return pageId ? `https://api.notion.com/v1/pages/${pageId}` : `https://api.notion.com/v1/pages`
   }
 
+  private notionPageContentApiURL(pageId: string, opts?: ListBlockChildrenQueryParameters) {
+    return opts
+      ? `https://api.notion.com/v1/blocks/${pageId}/children?${new URLSearchParams(opts as Record<string, string>).toString()}`
+      : `https://api.notion.com/v1/blocks/${pageId}/children`
+  }
+
   private notionDatabaseQueryURL() {
     return `https://api.notion.com/v1/databases/${this.notionDatabaseId}/query`
   }
@@ -39,8 +46,8 @@ export abstract class GenericDatabaseClass<
     // this.firebaseSecret = opts.firebaseSecret;
     this.notionApiHeaders = {
       Authorization: `Bearer ${opts.notionSecret}`,
-      'Content-Type': 'application/json',
       'Notion-Version': '2022-06-28',
+      'Content-Type': 'application/json',
     }
   }
 
@@ -84,7 +91,7 @@ export abstract class GenericDatabaseClass<
       throw new Error(`Failed to query database (${this.notionDatabaseId}): ${res.status} ${res.statusText}`)
     }
 
-    return (await res.json()) as DatabaseQueryResponse
+    return await res.json()
   }
 
   /**
@@ -110,7 +117,7 @@ export abstract class GenericDatabaseClass<
       )
     }
 
-    return (await res.json()) as DatabaseResponse
+    return await res.json()
   }
 
   /**
@@ -200,6 +207,36 @@ export abstract class GenericDatabaseClass<
         `Failed to archive page ${id} (database id: ${this.notionDatabaseId}): ${res.status} ${res.statusText}`,
       )
     }
+  }
+
+  /**
+   * Get page content as a block of blocks
+   *
+   * @param id - Notion page id
+   * @param opts - Pagination parameters
+   *
+   * @returns - Notion page content. See Notion API documentation for the response format.
+   * https://developers.notion.com/docs/working-with-page-content#modeling-content-as-blocks
+   *
+   * @example
+   * const pageContent = await db.getPageContent('70b2b25b7f434306b5089486de5efced')
+   * const blocks = pageContent.results
+   *
+   * console.log(blocks[0].has_children)
+   */
+  async getPageContent(id: string, opts?: ListBlockChildrenQueryParameters): Promise<ListBlockChildrenResponse> {
+    const res = await this.rateLimitedFetch(this.notionPageContentApiURL(id, opts), {
+      method: 'GET',
+      headers: this.notionApiHeaders,
+    })
+
+    if (!res.ok) {
+      throw new Error(
+        `Failed to get page content (${id}) (database id: ${this.notionDatabaseId}): ${res.status} ${res.statusText}`,
+      )
+    }
+
+    return await res.json()
   }
 
   // TODO: This is NoteMate Logic. Move it there!
