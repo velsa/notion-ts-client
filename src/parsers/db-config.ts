@@ -31,7 +31,7 @@ export function createConfigFromNotionDatabases(res: SearchResponse, config: Con
 
     try {
       dbConfig[id] = {
-        name: dbName,
+        _name: dbName,
         varName: normalizeProperty(dbName),
         pathName: normalizeProperty(dbName, 'kebabCase'),
         properties: remapToConfigProperties(properties),
@@ -56,8 +56,8 @@ function remapToConfigProperties(properties: Record<string, DatabasePropertyConf
     return {
       ...acc,
       [id]: {
-        name: name.replace(/\\/g, '\\\\'),
-        type,
+        _name: name.replace(/\\/g, '\\\\'),
+        _type: type,
         varName,
         readOnly: DEFAULT_READONLY_PROPERTIES.includes(type),
       },

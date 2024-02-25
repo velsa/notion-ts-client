@@ -34,7 +34,7 @@ export function generateClients(sdkPath: string, notionResJSON: SearchResponse, 
     // console.error('originDir', originDir)
     // console.error('originDir', __dirname)
 
-    log(`Generating SDK for database: ${dbConfig.name} in ${chalk.yellow(dbPath)}`)
+    log(`Generating SDK for database: ${dbConfig._name} in ${chalk.yellow(dbPath)}`)
     createTypesFile({
       dbPath,
       fileName: 'types.ts',

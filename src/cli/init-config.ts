@@ -37,7 +37,7 @@ export async function initConfigFile(options: ProgramOptions) {
 export function moveDefaultReadOnlyPropertiesToTheEnd(dbConfigs: ConfigFileDatabasesConfig) {
   for (const dbConfig of Object.values(dbConfigs)) {
     const readOnlyProps = Object.entries(dbConfig.properties).filter(([, propConfig]) =>
-      DEFAULT_READONLY_PROPERTIES.includes(propConfig.type),
+      DEFAULT_READONLY_PROPERTIES.includes(propConfig._type),
     )
 
     for (const [propId, propConfig] of readOnlyProps) {

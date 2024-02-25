@@ -79,24 +79,24 @@ function getCustomFilterTypes(dbTypeName: string, propsConfig: ConfigFilePropert
     .map((prop) => {
       const typePrefix = `${dbTypeName}${normalizeTypeName(prop.varName)}`
 
-      switch (prop.type) {
+      switch (prop._type) {
         case 'select':
           return `type ${typePrefix}PropertyFilter =
   | {
-      equals: ${dbTypeName}Response['properties']['${prop.name}']['select']['name']
+      equals: ${dbTypeName}Response['properties']['${prop._name}']['select']['name']
     }
   | {
-      does_not_equal: ${dbTypeName}Response['properties']['${prop.name}']['select']['name']
+      does_not_equal: ${dbTypeName}Response['properties']['${prop._name}']['select']['name']
     }
   | ExistencePropertyFilter      
 `
         case 'multi_select':
           return `type ${typePrefix}PropertyFilter =
   | {
-      contains: ${dbTypeName}Response['properties']['${prop.name}']['multi_select'][number]['name']
+      contains: ${dbTypeName}Response['properties']['${prop._name}']['multi_select'][number]['name']
     }
   | {
-      does_not_contain: ${dbTypeName}Response['properties']['${prop.name}']['multi_select'][number]['name']
+      does_not_contain: ${dbTypeName}Response['properties']['${prop._name}']['multi_select'][number]['name']
     }          
   | ExistencePropertyFilter
 `
@@ -122,7 +122,7 @@ function getCustomFilterTypes(dbTypeName: string, propsConfig: ConfigFilePropert
           return `type ${typePrefix}PropertyFilter = NumberPropertyFilter`
 
         default:
-          return `type ${typePrefix}PropertyFilter = ${capitalizeVarName(prop.type)}PropertyFilter`
+          return `type ${typePrefix}PropertyFilter = ${capitalizeVarName(prop._type)}PropertyFilter`
       }
     })
     .join('\n')
@@ -131,7 +131,7 @@ function getCustomFilterTypes(dbTypeName: string, propsConfig: ConfigFilePropert
 // ---
 
 export function getQueryFilterTypeImports(propsConfig: ConfigFilePropertiesConfig) {
-  const imports = Object.values(propsConfig).map((prop) => getImportType(prop.type))
+  const imports = Object.values(propsConfig).map((prop) => getImportType(prop._type))
   const uniqueImports = Array.from(new Set(imports))
     .filter((i) => i !== undefined)
     .sort()

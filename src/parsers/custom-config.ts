@@ -14,7 +14,7 @@ export function createCustomConfigFromNotionDatabases(
       const notionPropConfig = Object.values(notionDbConfig.properties).find((p) => p.id === propId)
 
       if (!notionPropConfig) {
-        console.warn(`Property ${prop.name} is missing in Notion database ${dbConfig.name}`)
+        console.warn(`Property ${prop._name} is missing in Notion database ${dbConfig._name}`)
 
         return propConfig
       }
@@ -26,7 +26,7 @@ export function createCustomConfigFromNotionDatabases(
       ) => {
         propConfig[propId] = {
           type,
-          name: prop.name,
+          name: prop._name,
           varName: prop.varName,
           options,
           groups,

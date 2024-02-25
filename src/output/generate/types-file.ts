@@ -36,7 +36,7 @@ ${queryTypes}
 
 function getTypesFileImports(dbTypeName: string, propsConfig: ConfigFilePropertiesConfig) {
   const constVarName = makeConstVarName(dbTypeName)
-  const imports = Object.values(propsConfig).map((prop) => getImportType(prop.type))
+  const imports = Object.values(propsConfig).map((prop) => getImportType(prop._type))
   const uniqueImports = Array.from(new Set(imports)).sort()
 
   return (
@@ -109,7 +109,7 @@ function getTypesFileProperties(
   const properties = Object.entries(propsConfig)
     .map(
       ([propId, propConfig]) =>
-        `${PROPERTIES_INDENT}"${propConfig.name}": ${getPropertyType(propConfig.type, customPropsConfig[propId])}`,
+        `${PROPERTIES_INDENT}"${propConfig._name}": ${getPropertyType(propConfig._type, customPropsConfig[propId])}`,
     )
     .join(',\n')
 

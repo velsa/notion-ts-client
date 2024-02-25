@@ -42,7 +42,7 @@ export class ${opts.dbTypeName}PatchDTO {
 
 function getDTOFileImports(dbTypeName: string, propsConfig: ConfigFilePropertiesConfig) {
   const imports = Object.values(propsConfig)
-    .map((prop) => getImportType(prop.type))
+    .map((prop) => getImportType(prop._type))
     .filter((i) => i !== undefined)
   const uniqueImports = Array.from(new Set(imports)).sort()
 
@@ -66,18 +66,18 @@ function getDTOFileType(dbTypeName: string, dbPropsConfig: ConfigFilePropertiesC
   const content = Object.values(dbPropsConfig).reduce((acc, propConfig) => {
     let typeValue
 
-    if (PATCH_IGNORE_PROPS.includes(propConfig.type) || propConfig.readOnly) {
+    if (PATCH_IGNORE_PROPS.includes(propConfig._type) || propConfig.readOnly) {
       return acc
     }
 
-    if (propConfig.type === 'multi_select') {
-      typeValue = `${dbTypeName}Response['properties']['${propConfig.name}']['multi_select'][number]['name'][]`
-    } else if (propConfig.type === 'select') {
-      typeValue = `${dbTypeName}Response['properties']['${propConfig.name}']['select']['name']`
-    } else if (['rich_text', 'title'].includes(propConfig.type)) {
+    if (propConfig._type === 'multi_select') {
+      typeValue = `${dbTypeName}Response['properties']['${propConfig._name}']['multi_select'][number]['name'][]`
+    } else if (propConfig._type === 'select') {
+      typeValue = `${dbTypeName}Response['properties']['${propConfig._name}']['select']['name']`
+    } else if (['rich_text', 'title'].includes(propConfig._type)) {
       typeValue = `string | { text: string; url?: string; annotations?: RichTextItemRequest['annotations'] } | RichTextItemRequest[]`
     } else {
-      typeValue = `Extract<UpdatePageBodyParameters['properties'][number], {type: '${propConfig.type}'}>['${propConfig.type}']`
+      typeValue = `Extract<UpdatePageBodyParameters['properties'][number], {type: '${propConfig._type}'}>['${propConfig._type}']`
     }
 
     acc += `${TYPE_INDENT}${propConfig.varName}?: ${typeValue}\n`
@@ -92,28 +92,28 @@ function getDTOFileCode(dbPropsConfig: ConfigFilePropertiesConfig) {
   const content = Object.entries(dbPropsConfig).reduce((acc, [propId, propConfig]) => {
     let objValue
 
-    if (PATCH_IGNORE_PROPS.includes(propConfig.type) || propConfig.readOnly) {
+    if (PATCH_IGNORE_PROPS.includes(propConfig._type) || propConfig.readOnly) {
       return acc
     }
 
-    if (propConfig.type === 'multi_select') {
+    if (propConfig._type === 'multi_select') {
       objValue = `
         type: 'multi_select',
         multi_select: props.${propConfig.varName}?.map((item) => ({ name: item })),`
-    } else if (propConfig.type === 'select') {
+    } else if (propConfig._type === 'select') {
       objValue = `
         type: 'select',
         select: { name: props.${propConfig.varName} },`
-    } else if (['rich_text', 'title'].includes(propConfig.type)) {
+    } else if (['rich_text', 'title'].includes(propConfig._type)) {
       const propsVar = `props.${propConfig.varName}`
 
       objValue = `
-        type: '${propConfig.type}',
-        ${propConfig.type}: typeof ${propsVar} === 'string' ? [{ type: 'text', text: { content: ${propsVar} } }] : !Array.isArray(${propsVar}) ? [{ type: 'text', text: { content: ${propsVar}.text, link: ${propsVar}.url ? { url: ${propsVar}.url } : undefined }, annotations: ${propsVar}.annotations }] : ${propsVar},`
+        type: '${propConfig._type}',
+        ${propConfig._type}: typeof ${propsVar} === 'string' ? [{ type: 'text', text: { content: ${propsVar} } }] : !Array.isArray(${propsVar}) ? [{ type: 'text', text: { content: ${propsVar}.text, link: ${propsVar}.url ? { url: ${propsVar}.url } : undefined }, annotations: ${propsVar}.annotations }] : ${propsVar},`
     } else {
       objValue = `
-        type: '${propConfig.type}',
-        ${propConfig.type}: props.${propConfig.varName},`
+        type: '${propConfig._type}',
+        ${propConfig._type}: props.${propConfig.varName},`
     }
 
     acc += `

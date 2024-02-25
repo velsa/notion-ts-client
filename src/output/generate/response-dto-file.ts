@@ -67,29 +67,29 @@ function getDTOFileImports(dbTypeName: string) {
 
 function getDTOFileCode(dbPropsConfig: ConfigFilePropertiesConfig) {
   const content = Object.values(dbPropsConfig).reduce((acc, propConfig) => {
-    if (propConfig.type === 'rich_text' || propConfig.type === 'title') {
+    if (propConfig._type === 'rich_text' || propConfig._type === 'title') {
       acc += `
 
   get ${propConfig.varName}() {
     return {
-      text: this.props['${propConfig.name}']?.${propConfig.type} ? this.props['${propConfig.name}'].${propConfig.type}.reduce((acc, item) => acc + item.plain_text, '') : undefined,
-      links: this.props['${propConfig.name}']?.${propConfig.type}? this.props['${propConfig.name}'].${propConfig.type}.filter((item) => item.href?.length).map((item) => item.href) : [],
-      ${propConfig.type}: this.props['${propConfig.name}']?.${propConfig.type},
+      text: this.props['${propConfig._name}']?.${propConfig._type} ? this.props['${propConfig._name}'].${propConfig._type}.reduce((acc, item) => acc + item.plain_text, '') : undefined,
+      links: this.props['${propConfig._name}']?.${propConfig._type}? this.props['${propConfig._name}'].${propConfig._type}.filter((item) => item.href?.length).map((item) => item.href) : [],
+      ${propConfig._type}: this.props['${propConfig._name}']?.${propConfig._type},
     }
   }`
-    } else if (propConfig.type === 'multi_select') {
+    } else if (propConfig._type === 'multi_select') {
       acc += `
   get ${propConfig.varName}() {
     return {
-      values: this.props['${propConfig.name}']?.${propConfig.type} ? this.props['${propConfig.name}'].${propConfig.type}.map((item) => item.name) : [],
-      ${propConfig.type}: this.props['${propConfig.name}']?.${propConfig.type},
+      values: this.props['${propConfig._name}']?.${propConfig._type} ? this.props['${propConfig._name}'].${propConfig._type}.map((item) => item.name) : [],
+      ${propConfig._type}: this.props['${propConfig._name}']?.${propConfig._type},
     }
   }`
     } else {
       acc += `
 
   get ${propConfig.varName}() {
-    return this.props['${propConfig.name}']?.${propConfig.type}
+    return this.props['${propConfig._name}']?.${propConfig._type}
   }`
     }
 

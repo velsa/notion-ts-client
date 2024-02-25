@@ -7,8 +7,6 @@ import { log, logError, logSuccess } from './log'
 const isEqual = <T>(a: T[], b: T[]) => JSON.stringify(a?.sort()) === JSON.stringify(b?.sort())
 
 export async function updateConfigFile(configFile: string, dbConfigData: ConfigFileDatabasesConfig) {
-  // log(`Updating config file ${chalk.yellow(configFile)}`)
-
   if (!fs.existsSync(configFile)) {
     logError(`File ${chalk.yellow(configFile)} does not exists. Please generate it with 'init' command.`)
     process.exit(1)

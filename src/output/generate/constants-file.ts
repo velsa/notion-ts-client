@@ -66,7 +66,7 @@ function getPropsToIds(propsConfig: ConfigFilePropertiesConfig) {
 function getPropsToTypes(propsConfig: ConfigFilePropertiesConfig) {
   return Object.values(propsConfig).reduce(
     (acc, propConfig) => {
-      acc[propConfig.varName] = propConfig.type
+      acc[propConfig.varName] = propConfig._type
 
       return acc
     },

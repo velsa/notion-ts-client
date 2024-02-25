@@ -103,26 +103,26 @@ Here is an example of a generated config file:
 {
   "databases": {
     "70b2b25b-7f13-4306-b56a-9486f01efced": {
-      "name": "🎫 Online Events",   // The name of your Database in Notion (don't change)
+      "_name": "🎫 Online Events",  // The name of your Database in Notion (don't change)
       "varName": "onlineEvents",    // The base name used to generate custom types for your Database
       "pathName": "online-events",  // Path of your database in SDK folder (<sdk-path>/dbs/online-events)
       "properties": {               // You can change "varName" and "readOnly" fields for each property
                                     // This change will be reflected in the generated SDK
         "C%3DP_": {                 // Notion property ID (don't change)
-          "name": "Type",           // Notion property name (don't change)
-          "type": "multi_select",   // Notion property type (don't change)
+          "_name": "Type",          // Notion property name (don't change)
+          "_type": "multi_select",  // Notion property type (don't change)
           "varName": "type",        // variable name to be generated in the SDK
           "readOnly": false         // read only properties will not be available in DTOs used for writes
         },
         "%3D%3DNA": {
-          "name": "Organization",
-          "type": "select",
+          "_name": "Organization",
+          "_type": "select",
           "varName": "organization",
           "readOnly": false
         },
         "%3DK%3F%3A": {
-          "name": "Short Description",
-          "type": "rich_text",
+          "_name": "Short Description",
+          "_type": "rich_text",
           "varName": "shortDescription",
           "readOnly": false
         },
