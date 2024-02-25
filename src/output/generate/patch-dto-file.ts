@@ -22,7 +22,7 @@ export class ${opts.dbTypeName}PatchDTO {
   data: UpdatePageBodyParameters
 
   constructor(opts: {
-    properties: ${opts.dbTypeName}PropertiesPatch
+    properties?: ${opts.dbTypeName}PropertiesPatch
     coverUrl?: string
     icon?: UpdatePageBodyParameters['icon']
     archived?: UpdatePageBodyParameters['archived']
@@ -117,7 +117,7 @@ function getDTOFileCode(dbPropsConfig: ConfigFilePropertiesConfig) {
     }
 
     acc += `
-    if (props.${propConfig.varName} !== undefined) {
+    if (props?.${propConfig.varName} !== undefined) {
       this.data.properties['${propId}'] = {${objValue}
       }
     }

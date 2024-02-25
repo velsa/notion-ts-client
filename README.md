@@ -212,11 +212,17 @@ export default {
 
 ## Important notes for usage in production:
 
-If a property in your Notion database has been **renamed** - your production code will not be affected, since under the hood all API calls use property IDs.
+### If a property in your Notion database has been **renamed**:
 
-If a property in Notion has been **removed** or its **type has been changed** - this might present a problem for the production code. The solution is: before removing a property from Notion database or changing its type – make sure that your production code will not fail when this change is applied in Notion.
+The methods `query` and `updatePage` will not be affected, since under the hood those methods call Notion API using property IDs. Unfortunately, the `getPage` method can fail, since Notion API returns names of Notion properties and **notion-ts-client** then tries to map property names to var names.
 
-Next time you run the `generate` command, you will get an updated config file and Client SDK, reflecting all the changes in your Notion databases. You might also see some Typescript errors in your code, since the types have changed. Which presents an excelent opportunity to adapt your code to the changes! 😎
+### If a property in Notion has been **removed** or its **type has been changed**:
+
+This might present a problem for the production code. In order to avoid failures in production, you should make sure that your production code will not fail when this change is applied in Notion. Once you have verified this, you can make the necessary change in your Notion database.
+
+### ALL schema changes in your Notion databases will be reflected in your SDKs:
+
+Next time you run the `generate` command – you will get an updated config file and a Client SDK, reflecting all the changes in your Notion databases. You might also see some Typescript errors in your code, since the types have changed. Now simply adapt your code to the changes! 😎
 
 ---
 

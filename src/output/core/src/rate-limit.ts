@@ -83,7 +83,7 @@ function limit<T extends (...args: any) => any>(fn: T, ctx?: any) {
     queue.push({ emitter, args })
 
     if (!timer) {
-      timer = setImmediate(pump)
+      timer = setTimeout(pump, 1)
     }
 
     return emitter as ExtendedEventEmitter
