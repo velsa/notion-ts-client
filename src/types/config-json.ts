@@ -1,4 +1,5 @@
 export interface ConfigFile {
+  ignore?: string[]
   databases: ConfigFileDatabasesConfig
 }
 export interface ConfigFileDatabasesConfig {

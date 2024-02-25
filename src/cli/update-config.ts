@@ -4,7 +4,9 @@ import { mergeConfigs } from '../parsers'
 import { ConfigFile, ConfigFileDatabasesConfig } from '../types'
 import { log, logError, logSuccess } from './log'
 
-export function updateConfigFile(configFile: string, dbConfigData: ConfigFileDatabasesConfig) {
+const isEqual = <T>(a: T[], b: T[]) => JSON.stringify(a?.sort()) === JSON.stringify(b?.sort())
+
+export async function updateConfigFile(configFile: string, dbConfigData: ConfigFileDatabasesConfig) {
   // log(`Updating config file ${chalk.yellow(configFile)}`)
 
   if (!fs.existsSync(configFile)) {
@@ -13,21 +15,21 @@ export function updateConfigFile(configFile: string, dbConfigData: ConfigFileDat
   }
 
   const userConfigData = readUserConfig(configFile)
-  const { merged, changes } = mergeConfigs(userConfigData.databases, dbConfigData)
-
-  userConfigData.databases = merged
-
+  const { mergedConfig, changes } = await mergeConfigs(userConfigData, dbConfigData)
   const numChanges = Object.keys(changes).length
 
-  if (numChanges === 0) {
+  if (numChanges === 0 && isEqual(mergedConfig.ignore, userConfigData.ignore)) {
     log('No changes detected. Not updating the config file.')
   } else {
-    fs.writeFileSync(configFile, JSON.stringify(userConfigData, null, 2))
+    fs.writeFileSync(configFile, JSON.stringify(mergedConfig, null, 2))
     logSuccess('Updated config file.')
-    log('Changes:', JSON.stringify(changes, null, 2))
+
+    if (numChanges !== 0) {
+      log('Changes:', JSON.stringify(changes, null, 2))
+    }
   }
 
-  return userConfigData
+  return mergedConfig
 }
 
 export function readUserConfig(configPath: string) {

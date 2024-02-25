@@ -4,12 +4,12 @@ import {
   DatabasePropertyConfigResponse,
   SearchResponse,
 } from '../output/core/types/notion-api.types'
-import { ConfigFileDatabasesConfig, ConfigFilePropertiesConfig } from '../types'
+import { ConfigFile, ConfigFileDatabasesConfig, ConfigFilePropertiesConfig } from '../types'
 import { normalizeProperty } from './normalize'
 
 export const DEFAULT_READONLY_PROPERTIES = ['id', 'created_time', 'last_edited_time', 'last_edited_by', 'created_by']
 
-export function createConfigFromNotionDatabases(res: SearchResponse): ConfigFileDatabasesConfig {
+export function createConfigFromNotionDatabases(res: SearchResponse, config: ConfigFile): ConfigFileDatabasesConfig {
   log('Parsing Notion databases into config...')
 
   const databases = res.results.filter((r) => r.object === 'database')
@@ -19,6 +19,12 @@ export function createConfigFromNotionDatabases(res: SearchResponse): ConfigFile
 
     if (!dbName) {
       logWarn(`Could not parse database name for database with id: ${id}`)
+
+      return dbConfig
+    }
+
+    if (config.ignore?.includes(id)) {
+      log(`Ignoring database: ${dbName} (${id})`)
 
       return dbConfig
     }

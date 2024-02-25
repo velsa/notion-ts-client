@@ -1,7 +1,7 @@
 import chalk from 'chalk'
 import fs from 'fs'
 import { DEFAULT_READONLY_PROPERTIES, createConfigFromNotionDatabases } from '../parsers'
-import { ConfigFileDatabasesConfig } from '../types'
+import { ConfigFile, ConfigFileDatabasesConfig } from '../types'
 import { log, logError, logSuccess } from './log'
 import { fetchNotionDatabases } from './notion-api'
 import { ProgramOptions } from './types'
@@ -15,7 +15,7 @@ export async function initConfigFile(options: ProgramOptions) {
   }
 
   const notionResJSON = await fetchNotionDatabases(options.secret)
-  const dbConfigData = createConfigFromNotionDatabases(notionResJSON)
+  const dbConfigData = createConfigFromNotionDatabases(notionResJSON, {} as ConfigFile)
 
   moveDefaultReadOnlyPropertiesToTheEnd(dbConfigData)
 
