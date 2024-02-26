@@ -23,7 +23,7 @@ export function createConfigFromNotionDatabases(res: SearchResponse, config: Con
       return dbConfig
     }
 
-    if (config.ignore?.includes(id)) {
+    if (config.ignore?.some((ignoredDb) => ignoredDb.id === id)) {
       log(`Ignoring database: ${dbName} (${id})`)
 
       return dbConfig

@@ -92,7 +92,7 @@ function getDTOFileCode(dbPropsConfig: ConfigFilePropertiesConfig) {
   const content = Object.entries(dbPropsConfig).reduce((acc, [propId, propConfig]) => {
     let objValue
 
-    if (PATCH_IGNORE_PROPS.includes(propConfig._type) || propConfig.readOnly) {
+    if (PATCH_IGNORE_PROPS.includes(propConfig._type) || propConfig.readOnly || propConfig._type === 'button') {
       return acc
     }
 

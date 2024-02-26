@@ -61,7 +61,7 @@ export async function mergeConfigs(
   original: ConfigFile,
   updatedDbConfigs: ConfigFileDatabasesConfig,
 ): Promise<MergeConfigsResult> {
-  const merged = Object.assign({}, original)
+  const merged = JSON.parse(JSON.stringify(original)) as ConfigFile
   const mergedDbConfig = merged.databases
   const changes: MergeConfigsResult['changes'] = {}
 
@@ -120,7 +120,7 @@ export async function mergeConfigs(
         }
       }
     } else {
-      if (original.ignore?.includes(dbId)) {
+      if (original.ignore?.some((ignoredDb) => ignoredDb.id === dbId)) {
         continue
       }
 
@@ -138,7 +138,10 @@ export async function mergeConfigs(
           merged.ignore = []
         }
 
-        merged.ignore.push(dbId)
+        merged.ignore.push({
+          name: updatedDbConfig._name,
+          id: dbId,
+        })
       }
     }
   }

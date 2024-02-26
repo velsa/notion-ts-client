@@ -1,3 +1,4 @@
+import { logError } from '../../cli/log'
 import { makeConstVarName } from '../../parsers'
 import { ConfigFilePropertiesConfig, CustomTypesPropertiesConfig, CustomTypesPropertyConfig } from '../../types'
 import { saveContentToFile } from '../file-utils'
@@ -36,7 +37,9 @@ ${queryTypes}
 
 function getTypesFileImports(dbTypeName: string, propsConfig: ConfigFilePropertiesConfig) {
   const constVarName = makeConstVarName(dbTypeName)
-  const imports = Object.values(propsConfig).map((prop) => getImportType(prop._type))
+  const imports = Object.values(propsConfig)
+    .map((prop) => getImportType(prop._type, prop._name))
+    .filter((p) => p !== undefined)
   const uniqueImports = Array.from(new Set(imports)).sort()
 
   return (
@@ -51,7 +54,7 @@ import { ${constVarName}_PROPS_TO_IDS } from './constants'`
   )
 }
 
-function getImportType(type: string) {
+function getImportType(type: string, name?: string) {
   switch (type) {
     case 'number':
       return 'NumberPropertyItemObjectResponse'
@@ -97,8 +100,16 @@ function getImportType(type: string) {
       return 'RelationPropertyItemObjectResponse'
     case 'rollup':
       return 'RollupPropertyItemObjectResponse'
+    case 'button':
+      logError(`Button property is not supported. Ignoring property: "${name}"`)
+
+      return
     default:
-      throw new Error(`Unknown property type: ${type}`)
+      if (name) {
+        logError(`Unknown/unsupported property type: "${type}". Ignoring property: "${name}"`)
+      }
+
+      return
   }
 }
 
@@ -107,10 +118,14 @@ function getTypesFileProperties(
   customPropsConfig: CustomTypesPropertiesConfig,
 ) {
   const properties = Object.entries(propsConfig)
-    .map(
-      ([propId, propConfig]) =>
-        `${PROPERTIES_INDENT}"${propConfig._name}": ${getPropertyType(propConfig._type, customPropsConfig[propId])}`,
-    )
+    .map(([propId, propConfig]) => {
+      const propType = getPropertyType(propConfig._type, customPropsConfig[propId])
+
+      if (propType) {
+        return `${PROPERTIES_INDENT}"${propConfig._name}": ${propType}`
+      }
+    })
+    .filter((p) => p !== undefined)
     .join(',\n')
 
   return properties

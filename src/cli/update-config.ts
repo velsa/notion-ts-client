@@ -16,7 +16,13 @@ export async function updateConfigFile(configFile: string, dbConfigData: ConfigF
   const { mergedConfig, changes } = await mergeConfigs(userConfigData, dbConfigData)
   const numChanges = Object.keys(changes).length
 
-  if (numChanges === 0 && isEqual(mergedConfig.ignore, userConfigData.ignore)) {
+  if (
+    numChanges === 0 &&
+    isEqual(
+      mergedConfig.ignore.map((i) => i.id),
+      userConfigData.ignore.map((i) => i.id),
+    )
+  ) {
     log('No changes detected. Not updating the config file.')
   } else {
     fs.writeFileSync(configFile, JSON.stringify(mergedConfig, null, 2))

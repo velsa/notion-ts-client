@@ -65,11 +65,17 @@ export type ${dbTypeName}QueryResponse = {
 }
 
 function getDBCustomFilterType(dbTypeName: string, propsConfig: ConfigFilePropertiesConfig) {
-  const unionTypes = Object.values(propsConfig).map((prop) => {
-    const typePrefix = `${dbTypeName}${normalizeTypeName(prop.varName)}`
+  const unionTypes = Object.values(propsConfig)
+    .map((prop) => {
+      if (prop._type === 'button') {
+        return
+      }
 
-    return `{ ${prop.varName}: ${typePrefix}PropertyFilter }`
-  })
+      const typePrefix = `${dbTypeName}${normalizeTypeName(prop.varName)}`
+
+      return `{ ${prop.varName}: ${typePrefix}PropertyFilter }`
+    })
+    .filter((t) => t !== undefined)
 
   return `type ${dbTypeName}PropertyFilter = ${unionTypes.join(' | ')}`
 }
@@ -121,20 +127,24 @@ function getCustomFilterTypes(dbTypeName: string, propsConfig: ConfigFilePropert
         case 'unique_id':
           return `type ${typePrefix}PropertyFilter = NumberPropertyFilter`
 
+        case 'button':
+          return
+
         default:
           return `type ${typePrefix}PropertyFilter = ${capitalizeVarName(prop._type)}PropertyFilter`
       }
     })
+    .filter((t) => t !== undefined)
     .join('\n')
 }
 
 // ---
 
 export function getQueryFilterTypeImports(propsConfig: ConfigFilePropertiesConfig) {
-  const imports = Object.values(propsConfig).map((prop) => getImportType(prop._type))
-  const uniqueImports = Array.from(new Set(imports))
+  const imports = Object.values(propsConfig)
+    .map((prop) => getQueryImportType(prop._type))
     .filter((i) => i !== undefined)
-    .sort()
+  const uniqueImports = Array.from(new Set(imports)).sort()
 
   return (
     `ExistencePropertyFilter,
@@ -145,10 +155,11 @@ TimestampLastEditedTimeFilter,
   )
 }
 
-function getImportType(type: string) {
+function getQueryImportType(type: string) {
   switch (type) {
     case 'select':
     case 'multi_select':
+    case 'button':
       return
 
     case 'title':

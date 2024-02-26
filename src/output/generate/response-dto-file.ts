@@ -67,13 +67,17 @@ function getDTOFileImports(dbTypeName: string) {
 
 function getDTOFileCode(dbPropsConfig: ConfigFilePropertiesConfig) {
   const content = Object.values(dbPropsConfig).reduce((acc, propConfig) => {
+    if (propConfig._type === 'button') {
+      return acc
+    }
+
     if (propConfig._type === 'rich_text' || propConfig._type === 'title') {
       acc += `
 
   get ${propConfig.varName}() {
     return {
       text: this.props['${propConfig._name}']?.${propConfig._type} ? this.props['${propConfig._name}'].${propConfig._type}.reduce((acc, item) => acc + item.plain_text, '') : undefined,
-      links: this.props['${propConfig._name}']?.${propConfig._type}? this.props['${propConfig._name}'].${propConfig._type}.filter((item) => item.href?.length).map((item) => item.href) : [],
+      links: this.props['${propConfig._name}']?.${propConfig._type} ? this.props['${propConfig._name}'].${propConfig._type}.filter((item) => item.href?.length).map((item) => item.href) : [],
       ${propConfig._type}: this.props['${propConfig._name}']?.${propConfig._type},
     }
   }`

@@ -1,6 +1,11 @@
 export interface ConfigFile {
-  ignore?: string[]
+  ignore?: ConfigFileIgnoreConfig[]
   databases: ConfigFileDatabasesConfig
+}
+
+export interface ConfigFileIgnoreConfig {
+  name: string
+  id: string
 }
 export interface ConfigFileDatabasesConfig {
   [dbId: string]: ConfigFileDatabaseConfig

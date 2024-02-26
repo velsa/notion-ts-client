@@ -145,6 +145,11 @@ The Typescript Clients will be generated in the specified directory.
 
 You can now access your Notion Databases in a fullproof and typesafe manner. As you should!
 
+> [!NOTE]
+> Every time **notion-ts-client** detects a new database that was added to your integration,
+> it will ask you if you want to generate the config and the SDK client for it.
+> If you answer No - the database will be added to the ignore list.
+
 ### Environment variables
 
 You can also configure your Notion secret and other cli options via environment variables. **notion-ts-client** uses `dotenv/config` to read the environment, so you can create `.env` file in your project root and put all cli config there:
