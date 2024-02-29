@@ -16,7 +16,7 @@ Generates an easy to use and fully typed API client to access and modify the dat
 Create complex calculations and intelligent automations for your Notion Databases using Typescript, ensuring complete type safety. Use automagically generated SDK with Custom Types per Database to safely read from and write to your Notion databases
 
 - Use **notion-ts-client** with Webhooks for building powerful automations and formulas (see example below)
-- Use Notion as your Database / Backoffice and use **notion-ts-client** to generate custom Typescript SDKs for your code. Ensure complete type equality between your backend and frontend.
+- Use Notion as your Database / Backoffice and **notion-ts-client** will generate custom Typescript SDKs for your code. Ensure complete type equality between your backend and frontend.
 
 <br/>
 
@@ -91,7 +91,7 @@ Add the databases you want to work with to your integration in Notion:
 Run the `init` command:
 
 ```sh
-npx notion-ts-client init --secret <notion_secret>
+npx notion-ts-client@latest init --secret <notion_secret>
 ```
 
 A config file will be generated for all the databases you added to your integration. Generated configuration reflects your database and its properties. You can read about the structure of Notion databases and the available property types <a href="https://developers.notion.com/docs/working-with-databases#structure" target="_blank">in the Notion docs</a>
@@ -138,7 +138,7 @@ When you run the `generate` command, **notion-ts-client** automatically updates 
 Run the `generate` command:
 
 ```sh
-npx notion-ts-client generate --secret <notion_secret> --sdk <path_to_sdk>
+npx notion-ts-client@latest generate --secret <notion_secret> --sdk <path_to_sdk>
 ```
 
 The Typescript Clients will be generated in the specified directory.
@@ -163,7 +163,7 @@ NOTION_TS_CLIENT_SDK_PATH=./src/notion-sdk
 Now you can simply run
 
 ```sh
-npx notion-ts-client generate
+npx notion-ts-client@latest generate
 ```
 
 to regenerate your SDKs whenever you need to reflect in your code the changes that were made in Notion.
