@@ -16,6 +16,7 @@ export function copyCoreFiles(opts: { fromPath: string; toPath: string }) {
   if (!fs.existsSync(srcToPath)) {
     fs.mkdirSync(srcToPath)
     fs.copyFileSync(path.join(srcFromPath, 'generic-db.ts'), path.join(srcToPath, 'generic-db.ts'))
+    fs.copyFileSync(path.join(srcFromPath, 'notion-urls.ts'), path.join(srcToPath, 'notion-urls.ts'))
     fs.copyFileSync(path.join(srcFromPath, 'rate-limit.ts'), path.join(srcToPath, 'rate-limit.ts'))
   }
 

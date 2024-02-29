@@ -5,6 +5,7 @@ import {
   ListBlockChildrenQueryParameters,
   ListBlockChildrenResponse,
 } from '../types/notion-api.types'
+import { notionDatabaseQueryURL, notionPageApiURL, notionPageContentApiURL } from './notion-urls'
 import rateLimit from './rate-limit'
 
 export type DatabaseOptions = {
@@ -29,21 +30,6 @@ export abstract class GenericDatabaseClass<
   protected abstract notionDatabaseId: string
   protected abstract queryRemapFilter(filter?: Record<string, unknown>): Record<string, unknown> | undefined
   protected abstract queryRemapSorts(sorts?: Record<string, string>[]): Record<string, string>[] | undefined
-
-  private notionPageApiURL = (pageId?: string) =>
-    pageId ? `https://api.notion.com/v1/pages/${pageId}` : `https://api.notion.com/v1/pages`
-
-  private notionPageContentApiURL = (
-    pageId: string,
-    opts?: ListBlockChildrenQueryParameters | AppendBlockChildrenParameters,
-  ) =>
-    opts
-      ? `https://api.notion.com/v1/blocks/${pageId}/children?${new URLSearchParams(opts as Record<string, string>).toString()}`
-      : `https://api.notion.com/v1/blocks/${pageId}/children`
-
-  private notionBlockApiURL = (blockId: string) => `https://api.notion.com/v1/blocks/${blockId}`
-
-  private notionDatabaseQueryURL = () => `https://api.notion.com/v1/databases/${this.notionDatabaseId}/query`
 
   constructor(opts: DatabaseOptions) {
     if (!opts.notionSecret) {
@@ -88,7 +74,7 @@ export abstract class GenericDatabaseClass<
       sorts: this.queryRemapSorts(query['sorts']),
     }
     // console.log('Querying Notion database with:', JSON.stringify(notionQuery, null, 2))
-    const res = await this.rateLimitedFetch(this.notionDatabaseQueryURL(), {
+    const res = await this.rateLimitedFetch(notionDatabaseQueryURL(this.notionDatabaseId), {
       method: 'POST',
       headers: this.notionApiHeaders,
       body: JSON.stringify(notionQuery),
@@ -114,7 +100,7 @@ export abstract class GenericDatabaseClass<
    * console.log(page.properties.title)
    */
   async getPage(id: string): Promise<DatabaseResponse> {
-    const res = await this.rateLimitedFetch(this.notionPageApiURL(id), {
+    const res = await this.rateLimitedFetch(notionPageApiURL(id), {
       method: 'GET',
       headers: this.notionApiHeaders,
     })
@@ -144,7 +130,7 @@ export abstract class GenericDatabaseClass<
    * await db.updatePage('70b2b25b7f434306b5089486de5efced', patch)
    */
   async updatePage(id: string, patch: DatabasePatchDTO): Promise<DatabaseResponse> {
-    const res = await this.rateLimitedFetch(this.notionPageApiURL(id), {
+    const res = await this.rateLimitedFetch(notionPageApiURL(id), {
       method: 'PATCH',
       headers: this.notionApiHeaders,
       body: JSON.stringify(patch.__data),
@@ -179,7 +165,7 @@ export abstract class GenericDatabaseClass<
     meta: DatabasePatchDTO | CreatePageBodyParameters,
     content?: BlockObjectRequest[],
   ): Promise<DatabaseResponse> {
-    const res = await this.rateLimitedFetch(this.notionPageApiURL(), {
+    const res = await this.rateLimitedFetch(notionPageApiURL(), {
       method: 'POST',
       headers: this.notionApiHeaders,
       body: JSON.stringify({
@@ -192,6 +178,35 @@ export abstract class GenericDatabaseClass<
     if (!res.ok) {
       console.error(await res.json())
       throw new Error(`Failed to create page in database (${this.notionDatabaseId}): ${res.status} ${res.statusText}`)
+    }
+
+    return await res.json()
+  }
+
+  /**
+   * Archive a page in the Notion database.
+   * Archived pages are not deleted, but are hidden from the database view.
+   * The id of the archived page can not be restored.
+   * It is recommended to save the id of the archived page if you plan to restore it later.
+   *
+   * @param id - Notion page id
+   *
+   * @example
+   *
+   * await db.archivePage('70b2b25b7f434306b5089486de5efced')
+   */
+  async archivePage(id: string): Promise<DatabaseResponse> {
+    const res = await this.rateLimitedFetch(notionPageApiURL(id), {
+      method: 'PATCH',
+      headers: this.notionApiHeaders,
+      body: JSON.stringify({ archived: true }),
+    })
+
+    if (!res.ok) {
+      console.error(await res.json())
+      throw new Error(
+        `Failed to archive page ${id} (database id: ${this.notionDatabaseId}): ${res.status} ${res.statusText}`,
+      )
     }
 
     return await res.json()
@@ -211,7 +226,7 @@ export abstract class GenericDatabaseClass<
     content: BlockObjectRequest[],
     opts?: AppendBlockChildrenParameters,
   ): Promise<ListBlockChildrenResponse> {
-    const res = await this.rateLimitedFetch(this.notionPageContentApiURL(id, opts), {
+    const res = await this.rateLimitedFetch(notionPageContentApiURL(id, opts), {
       method: 'PATCH',
       headers: this.notionApiHeaders,
       body: JSON.stringify({
@@ -223,35 +238,6 @@ export abstract class GenericDatabaseClass<
       console.error(await res.json())
       throw new Error(
         `appendBlockChildren failed for database (${this.notionDatabaseId}): ${res.status} ${res.statusText}`,
-      )
-    }
-
-    return await res.json()
-  }
-
-  /**
-   * Archive a page in the Notion database.
-   * Archived pages are not deleted, but are hidden from the database view.
-   * The id of the archived page can not be restored.
-   * It is recommended to save the id of the archived page if you plan to restore it later.
-   *
-   * @param id - Notion page id
-   *
-   * @example
-   *
-   * await db.archivePage('70b2b25b7f434306b5089486de5efced')
-   */
-  async archivePage(id: string): Promise<DatabaseResponse> {
-    const res = await this.rateLimitedFetch(this.notionPageApiURL(id), {
-      method: 'PATCH',
-      headers: this.notionApiHeaders,
-      body: JSON.stringify({ archived: true }),
-    })
-
-    if (!res.ok) {
-      console.error(await res.json())
-      throw new Error(
-        `Failed to archive page ${id} (database id: ${this.notionDatabaseId}): ${res.status} ${res.statusText}`,
       )
     }
 
@@ -275,7 +261,7 @@ export abstract class GenericDatabaseClass<
    */
   async getBlockChildren(id: string, opts?: ListBlockChildrenQueryParameters): Promise<ListBlockChildrenResponse> {
     // TODO: support recursive fetching of all blocks with children
-    const res = await this.rateLimitedFetch(this.notionPageContentApiURL(id, opts), {
+    const res = await this.rateLimitedFetch(notionPageContentApiURL(id, opts), {
       method: 'GET',
       headers: this.notionApiHeaders,
     })
