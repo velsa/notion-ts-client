@@ -11,7 +11,7 @@ import {
   createTypesFile,
 } from '../output'
 import { SearchResponse } from '../output/core/types/notion-api.types'
-import { createCustomConfigFromNotionDatabases, normalizeTypeName } from '../parsers'
+import { createCustomConfigFromNotionDatabases, makeTypeName } from '../parsers'
 import { ConfigFile } from '../types'
 import { log, logSuccess } from './log'
 
@@ -27,7 +27,7 @@ export function generateClients(sdkPath: string, notionResJSON: SearchResponse, 
 
   Object.entries(userConfigData.databases).map(([dbId, dbConfig]) => {
     const dbPath = path.join(sdkPath, 'dbs', dbConfig.pathName)
-    const dbTypeName = normalizeTypeName(dbConfig.varName)
+    const dbTypeName = makeTypeName(dbConfig.varName)
     const originDir = buildOriginDir(process.argv[1])
 
     // console.error('runDir', runDir)
@@ -80,29 +80,36 @@ export function generateClients(sdkPath: string, notionResJSON: SearchResponse, 
   logSuccess(`\nNotion Typescript clients have been generated in ${chalk.yellow(sdkPath)}`)
 }
 
-function buildOriginDir(appPath?: string) {
-  if (!appPath) {
-    throw new Error("Can' t locate origin directory. Make sure you run the cli with npx or pnpx")
-  }
+function buildOriginDir(appPath: string) {
+  const runDir = path.parse(appPath).dir
+  const parts = runDir.split(path.sep)
+  const last = parts[parts.length - 1]
+  const beforeLast = parts[parts.length - 2]
 
-  const runDir = appPath.match(/^(.*)\/[^/]+$/)?.[1]
-
-  if (!runDir) {
-    throw new Error('Invalid origin directory?! Make sure you run the cli with npx or pnpx')
-  }
+  // console.error('appPath', appPath)
+  // console.error('runDir', runDir)
+  // console.error('parts', parts)
 
   // running locally
   if (process.env.NOTION_TS_CLIENT_DEBUG) {
     return path.join(runDir, '../src')
   }
 
-  const parts = runDir.split('/')
-
-  if (parts[parts.length - 2] === 'notion-ts-client') {
-    // pnpx
-    return path.join(runDir, '../src')
-  } else {
-    // npx
-    return path.join(runDir, '../notion-ts-client/src')
+  if (last === '.bin' && beforeLast === 'node_modules') {
+    // npx (installed)
+    return path.join(runDir, '..', 'notion-ts-client', 'src')
   }
+
+  // if (last === 'cli' && beforeLast === 'dist') {
+  //   // npx (tmp)
+  //   return path.join(runDir, '..', '..')
+  // }
+
+  if (beforeLast === 'notion-ts-client') {
+    // pnpx
+    return path.join(runDir, '..', 'src')
+  }
+
+  // npx
+  return path.join(runDir, '..', 'notion-ts-client', 'src')
 }

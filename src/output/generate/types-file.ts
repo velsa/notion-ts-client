@@ -1,4 +1,4 @@
-import { logError } from '../../cli/log'
+import { logError, logWarn } from '../../cli/log'
 import { makeConstVarName } from '../../parsers'
 import { ConfigFilePropertiesConfig, CustomTypesPropertiesConfig, CustomTypesPropertyConfig } from '../../types'
 import { saveContentToFile } from '../file-utils'
@@ -26,7 +26,7 @@ ${properties}
   }
 }
 
-export type ${dbTypeName}Properties = keyof ${dbTypeName}Response['properties']
+export type ${dbTypeName}ResponseProperties = keyof ${dbTypeName}Response['properties']
 export type ${dbTypeName}Path = Join<PathsToStringProps<${dbTypeName}Response>>
 
 ${queryTypes}
@@ -101,12 +101,14 @@ function getImportType(type: string, name?: string) {
     case 'rollup':
       return 'RollupPropertyItemObjectResponse'
     case 'button':
-      logError(`Button property is not supported. Ignoring property: "${name}"`)
+      if (name) {
+        logWarn(`Button property is not supported. Ignoring property: "${name}"`)
+      }
 
       return
     default:
       if (name) {
-        logError(`Unknown/unsupported property type: "${type}". Ignoring property: "${name}"`)
+        logError(`Error: Unknown/unsupported property type: "${type}". Ignoring property: "${name}"`)
       }
 
       return

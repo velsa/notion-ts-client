@@ -16,14 +16,14 @@ export function normalizeProperty(property: string, caseType: 'camelCase' | 'keb
   return casedSlug ?? ''
 }
 
-export function normalizeTypeName(varName: string) {
+export function makeTypeName(varName: string) {
   return capitalizeVarName(varName)
-}
-
-export function capitalizeVarName(varName: string) {
-  return varName.charAt(0).toUpperCase() + varName.slice(1)
 }
 
 export function makeConstVarName(varName: string) {
   return changeCase.constantCase(varName)
+}
+
+export function capitalizeVarName(varName: string) {
+  return varName.charAt(0).toUpperCase() + varName.slice(1)
 }

@@ -1,7 +1,7 @@
 import chalk from 'chalk'
 import fs from 'fs'
-import { DEFAULT_READONLY_PROPERTIES, createConfigFromNotionDatabases } from '../parsers'
-import { ConfigFile, ConfigFileDatabasesConfig } from '../types'
+import { createConfigFromNotionDatabases, moveDefaultReadOnlyPropertiesToTheEnd } from '../parsers'
+import { ConfigFile } from '../types'
 import { log, logError, logSuccess } from './log'
 import { fetchNotionDatabases } from './notion-api'
 import { ProgramOptions } from './types'
@@ -32,17 +32,4 @@ export async function initConfigFile(options: ProgramOptions) {
       `When you run the ${chalk.yellow('generate')} command – ` +
       `your Typescript Client will be generated with custom var names and types as specified in the config file.`,
   )
-}
-
-export function moveDefaultReadOnlyPropertiesToTheEnd(dbConfigs: ConfigFileDatabasesConfig) {
-  for (const dbConfig of Object.values(dbConfigs)) {
-    const readOnlyProps = Object.entries(dbConfig.properties).filter(([, propConfig]) =>
-      DEFAULT_READONLY_PROPERTIES.includes(propConfig._type),
-    )
-
-    for (const [propId, propConfig] of readOnlyProps) {
-      delete dbConfig.properties[propId]
-      dbConfig.properties[propId] = propConfig
-    }
-  }
 }

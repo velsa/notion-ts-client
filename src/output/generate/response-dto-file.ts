@@ -9,10 +9,12 @@ export function createResponseDTOFile(opts: {
 }) {
   const { dbPath, fileName, dbTypeName, propsConfig } = opts
   const imports = getDTOFileImports(dbTypeName)
+  const contructorCode = getDTOConstructorFileCode(propsConfig)
   const code = getDTOFileCode(propsConfig)
   const content = `${imports}
 
 export class ${dbTypeName}ResponseDTO {
+  __data: ${dbTypeName}Response
   id: ${dbTypeName}Response['id']
   title: ${dbTypeName}Response['title']
   description: ${dbTypeName}Response['description']
@@ -30,6 +32,7 @@ export class ${dbTypeName}ResponseDTO {
   properties: ${dbTypeName}PropertiesResponseDTO
 
   constructor(res: ${dbTypeName}Response) {
+    this.__data = res
     this.id = res.id
     this.title = res.title
     this.description = res.description
@@ -49,10 +52,12 @@ export class ${dbTypeName}ResponseDTO {
 }
   
 export class ${dbTypeName}PropertiesResponseDTO {
-  private props: ${dbTypeName}Response['properties']
+  private __props: ${dbTypeName}Response['properties']
+  private __data
 
   constructor(props: ${dbTypeName}Response['properties']) {
-    this.props = props
+    this.__props = props
+${contructorCode}
   }
 ${code}
 }
@@ -63,6 +68,19 @@ ${code}
 
 function getDTOFileImports(dbTypeName: string) {
   return `import { ${dbTypeName}Response } from "./types"`
+}
+
+function getDTOConstructorFileCode(dbPropsConfig: ConfigFilePropertiesConfig) {
+  const content = Object.values(dbPropsConfig).reduce((acc, propConfig) => {
+    if (propConfig._type === 'button') {
+      return acc
+    }
+
+    return acc + `      ${propConfig.varName}: this.__props['${propConfig._name}'],\n`
+  }, '')
+
+  return `    this.__data = {
+${content}    }`
 }
 
 function getDTOFileCode(dbPropsConfig: ConfigFilePropertiesConfig) {
@@ -76,24 +94,24 @@ function getDTOFileCode(dbPropsConfig: ConfigFilePropertiesConfig) {
 
   get ${propConfig.varName}() {
     return {
-      text: this.props['${propConfig._name}']?.${propConfig._type} ? this.props['${propConfig._name}'].${propConfig._type}.reduce((acc, item) => acc + item.plain_text, '') : undefined,
-      links: this.props['${propConfig._name}']?.${propConfig._type} ? this.props['${propConfig._name}'].${propConfig._type}.filter((item) => item.href?.length).map((item) => item.href) : [],
-      ${propConfig._type}: this.props['${propConfig._name}']?.${propConfig._type},
+      text: this.__props['${propConfig._name}']?.${propConfig._type} ? this.__props['${propConfig._name}'].${propConfig._type}.reduce((acc, item) => acc + item.plain_text, '') : undefined,
+      links: this.__props['${propConfig._name}']?.${propConfig._type} ? this.__props['${propConfig._name}'].${propConfig._type}.filter((item) => item.href?.length).map((item) => item.href) : [],
+      ${propConfig._type}: this.__props['${propConfig._name}']?.${propConfig._type},
     }
   }`
     } else if (propConfig._type === 'multi_select') {
       acc += `
   get ${propConfig.varName}() {
     return {
-      values: this.props['${propConfig._name}']?.${propConfig._type} ? this.props['${propConfig._name}'].${propConfig._type}.map((item) => item.name) : [],
-      ${propConfig._type}: this.props['${propConfig._name}']?.${propConfig._type},
+      values: this.__props['${propConfig._name}']?.${propConfig._type} ? this.__props['${propConfig._name}'].${propConfig._type}.map((item) => item.name) : [],
+      ${propConfig._type}: this.__props['${propConfig._name}']?.${propConfig._type},
     }
   }`
     } else {
       acc += `
 
   get ${propConfig.varName}() {
-    return this.props['${propConfig._name}']?.${propConfig._type}
+    return this.__props['${propConfig._name}']?.${propConfig._type}
   }`
     }
 

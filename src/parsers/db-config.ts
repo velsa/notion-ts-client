@@ -66,3 +66,16 @@ function remapToConfigProperties(properties: Record<string, DatabasePropertyConf
 
   return remappedProperties
 }
+
+export function moveDefaultReadOnlyPropertiesToTheEnd(dbConfigs: ConfigFileDatabasesConfig) {
+  for (const dbConfig of Object.values(dbConfigs)) {
+    const readOnlyProps = Object.entries(dbConfig.properties).filter(([, propConfig]) =>
+      DEFAULT_READONLY_PROPERTIES.includes(propConfig._type),
+    )
+
+    for (const [propId, propConfig] of readOnlyProps) {
+      delete dbConfig.properties[propId]
+      dbConfig.properties[propId] = propConfig
+    }
+  }
+}

@@ -30,8 +30,8 @@ function limit<T extends (...args: any) => any>(fn: T, ctx?: any) {
     _fuzz = 0,
     _evenly = false,
     _maxQueueLength = 5000
-  let pastExecs: any[] = [],
-    timer: any = null
+  let pastExecs: any[] = []
+  let timer: NodeJS.Timeout = null
   const queue: any[] = []
 
   function pump() {

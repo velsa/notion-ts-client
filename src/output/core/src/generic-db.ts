@@ -1,4 +1,10 @@
-import { ListBlockChildrenQueryParameters, ListBlockChildrenResponse } from '../types/notion-api.types'
+import {
+  AppendBlockChildrenParameters,
+  BlockObjectRequest,
+  CreatePageBodyParameters,
+  ListBlockChildrenQueryParameters,
+  ListBlockChildrenResponse,
+} from '../types/notion-api.types'
 import rateLimit from './rate-limit'
 
 export type DatabaseOptions = {
@@ -8,7 +14,7 @@ export type DatabaseOptions = {
 
 export abstract class GenericDatabaseClass<
   DatabaseResponse,
-  DatabasePatchDTO extends { data: Record<string, unknown> },
+  DatabasePatchDTO extends { __data: Record<string, unknown> },
   DatabaseQuery extends {
     filter?: Record<string, unknown>
     sorts?: Record<string, string>[]
@@ -24,19 +30,20 @@ export abstract class GenericDatabaseClass<
   protected abstract queryRemapFilter(filter?: Record<string, unknown>): Record<string, unknown> | undefined
   protected abstract queryRemapSorts(sorts?: Record<string, string>[]): Record<string, string>[] | undefined
 
-  private notionPageApiURL(pageId?: string) {
-    return pageId ? `https://api.notion.com/v1/pages/${pageId}` : `https://api.notion.com/v1/pages`
-  }
+  private notionPageApiURL = (pageId?: string) =>
+    pageId ? `https://api.notion.com/v1/pages/${pageId}` : `https://api.notion.com/v1/pages`
 
-  private notionPageContentApiURL(pageId: string, opts?: ListBlockChildrenQueryParameters) {
-    return opts
+  private notionPageContentApiURL = (
+    pageId: string,
+    opts?: ListBlockChildrenQueryParameters | AppendBlockChildrenParameters,
+  ) =>
+    opts
       ? `https://api.notion.com/v1/blocks/${pageId}/children?${new URLSearchParams(opts as Record<string, string>).toString()}`
       : `https://api.notion.com/v1/blocks/${pageId}/children`
-  }
 
-  private notionDatabaseQueryURL() {
-    return `https://api.notion.com/v1/databases/${this.notionDatabaseId}/query`
-  }
+  private notionBlockApiURL = (blockId: string) => `https://api.notion.com/v1/blocks/${blockId}`
+
+  private notionDatabaseQueryURL = () => `https://api.notion.com/v1/databases/${this.notionDatabaseId}/query`
 
   constructor(opts: DatabaseOptions) {
     if (!opts.notionSecret) {
@@ -88,6 +95,7 @@ export abstract class GenericDatabaseClass<
     })
 
     if (!res.ok) {
+      console.error(await res.json())
       throw new Error(`Failed to query database (${this.notionDatabaseId}): ${res.status} ${res.statusText}`)
     }
 
@@ -112,6 +120,7 @@ export abstract class GenericDatabaseClass<
     })
 
     if (!res.ok) {
+      console.error(await res.json())
       throw new Error(
         `Failed to get page (${id}) properties (database id: ${this.notionDatabaseId}): ${res.status} ${res.statusText}`,
       )
@@ -134,60 +143,97 @@ export abstract class GenericDatabaseClass<
    *
    * await db.updatePage('70b2b25b7f434306b5089486de5efced', patch)
    */
-  async updatePage(id: string, patch: DatabasePatchDTO) {
+  async updatePage(id: string, patch: DatabasePatchDTO): Promise<DatabaseResponse> {
     const res = await this.rateLimitedFetch(this.notionPageApiURL(id), {
       method: 'PATCH',
       headers: this.notionApiHeaders,
-      body: JSON.stringify(patch['data']),
+      body: JSON.stringify(patch.__data),
     })
 
     if (!res.ok) {
+      console.error(await res.json())
       throw new Error(
         `Failed to update page (${id}) properties (database id: ${this.notionDatabaseId}): ${res.status} ${res.statusText}`,
       )
     }
+
+    return await res.json()
   }
 
   /**
    * Create a page in the Notion database
-   * @param create - Create data. Use your custom DTO type to create the new page data.
+   * @param meta - Page metadata and properties. Use your custom PatchDTO.
+   * @param content - Page content – Notion blocks. See Notion API documentation for the block format.
    *
    * @example
    *
-   * await db.createPage(new MyDatabasePatchDTO({
+   * const meta = new MyDatabasePatchDTO({
    *  properties: {
-   *   title: 'New title',
+   *   title: 'New page',
    *  }
-   * }))
+   * })
+   *
+   * await db.createPage(meta)
    */
-  async createPage(create: DatabasePatchDTO) {
-    console.log(
-      'Creating page with:',
-      JSON.stringify({
-        parent: { database_id: this.notionDatabaseId },
-        ...create.data,
-      }),
-    )
-
+  async createPage(
+    meta: DatabasePatchDTO | CreatePageBodyParameters,
+    content?: BlockObjectRequest[],
+  ): Promise<DatabaseResponse> {
     const res = await this.rateLimitedFetch(this.notionPageApiURL(), {
       method: 'POST',
       headers: this.notionApiHeaders,
       body: JSON.stringify({
+        ...('__data' in meta ? meta.__data : meta),
         parent: { database_id: this.notionDatabaseId },
-        ...create.data,
+        children: content && content.length > 0 ? content : undefined,
       }),
     })
 
     if (!res.ok) {
+      console.error(await res.json())
       throw new Error(`Failed to create page in database (${this.notionDatabaseId}): ${res.status} ${res.statusText}`)
     }
+
+    return await res.json()
+  }
+
+  /**
+   * Create a page in the Notion database
+   * @param id - Page or block id
+   * @param content - Page content – Notion blocks. See Notion API documentation for the block format.
+   *
+   * @example
+   *
+   * await db.appendBlockChildren(pageId, content)
+   */
+  async appendBlockChildren(
+    id: string,
+    content: BlockObjectRequest[],
+    opts?: AppendBlockChildrenParameters,
+  ): Promise<ListBlockChildrenResponse> {
+    const res = await this.rateLimitedFetch(this.notionPageContentApiURL(id, opts), {
+      method: 'PATCH',
+      headers: this.notionApiHeaders,
+      body: JSON.stringify({
+        children: content && content.length > 0 ? content : undefined,
+      }),
+    })
+
+    if (!res.ok) {
+      console.error(await res.json())
+      throw new Error(
+        `appendBlockChildren failed for database (${this.notionDatabaseId}): ${res.status} ${res.statusText}`,
+      )
+    }
+
+    return await res.json()
   }
 
   /**
    * Archive a page in the Notion database.
    * Archived pages are not deleted, but are hidden from the database view.
    * The id of the archived page can not be restored.
-   * It is recommended to store the id of the archived page if you plan to restore it later.
+   * It is recommended to save the id of the archived page if you plan to restore it later.
    *
    * @param id - Notion page id
    *
@@ -195,7 +241,7 @@ export abstract class GenericDatabaseClass<
    *
    * await db.archivePage('70b2b25b7f434306b5089486de5efced')
    */
-  async archivePage(id: string) {
+  async archivePage(id: string): Promise<DatabaseResponse> {
     const res = await this.rateLimitedFetch(this.notionPageApiURL(id), {
       method: 'PATCH',
       headers: this.notionApiHeaders,
@@ -203,10 +249,13 @@ export abstract class GenericDatabaseClass<
     })
 
     if (!res.ok) {
+      console.error(await res.json())
       throw new Error(
         `Failed to archive page ${id} (database id: ${this.notionDatabaseId}): ${res.status} ${res.statusText}`,
       )
     }
+
+    return await res.json()
   }
 
   /**
@@ -219,18 +268,20 @@ export abstract class GenericDatabaseClass<
    * https://developers.notion.com/docs/working-with-page-content#modeling-content-as-blocks
    *
    * @example
-   * const pageContent = await db.getPageContent('70b2b25b7f434306b5089486de5efced')
+   * const pageContent = await db.getBlockChildren('70b2b25b7f434306b5089486de5efced')
    * const blocks = pageContent.results
    *
    * console.log(blocks[0].has_children)
    */
-  async getPageContent(id: string, opts?: ListBlockChildrenQueryParameters): Promise<ListBlockChildrenResponse> {
+  async getBlockChildren(id: string, opts?: ListBlockChildrenQueryParameters): Promise<ListBlockChildrenResponse> {
+    // TODO: support recursive fetching of all blocks with children
     const res = await this.rateLimitedFetch(this.notionPageContentApiURL(id, opts), {
       method: 'GET',
       headers: this.notionApiHeaders,
     })
 
     if (!res.ok) {
+      console.error(await res.json())
       throw new Error(
         `Failed to get page content (${id}) (database id: ${this.notionDatabaseId}): ${res.status} ${res.statusText}`,
       )

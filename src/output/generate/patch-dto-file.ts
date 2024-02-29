@@ -19,7 +19,7 @@ export type ${opts.dbTypeName}PropertiesPatch = {
 ${type}}
   
 export class ${opts.dbTypeName}PatchDTO {
-  data: UpdatePageBodyParameters
+  __data: UpdatePageBodyParameters
 
   constructor(opts: {
     properties?: ${opts.dbTypeName}PropertiesPatch
@@ -29,10 +29,10 @@ export class ${opts.dbTypeName}PatchDTO {
   }) {
     const { properties: props, coverUrl, icon, archived } = opts
 
-    this.data = { properties: {} }
-    this.data.cover = coverUrl ? { type: 'external', external: { url: coverUrl } } : undefined
-    this.data.icon = icon
-    this.data.archived = archived
+    this.__data = { properties: {} }
+    this.__data.cover = coverUrl ? { type: 'external', external: { url: coverUrl } } : undefined
+    this.__data.icon = icon
+    this.__data.archived = archived
     ${code}  }
 }
 `
@@ -66,7 +66,7 @@ function getDTOFileType(dbTypeName: string, dbPropsConfig: ConfigFilePropertiesC
   const content = Object.values(dbPropsConfig).reduce((acc, propConfig) => {
     let typeValue
 
-    if (PATCH_IGNORE_PROPS.includes(propConfig._type) || propConfig.readOnly) {
+    if (PATCH_IGNORE_PROPS.includes(propConfig._type) || propConfig.readOnly || propConfig._type === 'button') {
       return acc
     }
 
@@ -118,7 +118,7 @@ function getDTOFileCode(dbPropsConfig: ConfigFilePropertiesConfig) {
 
     acc += `
     if (props?.${propConfig.varName} !== undefined) {
-      this.data.properties['${propId}'] = {${objValue}
+      this.__data.properties['${propId}'] = {${objValue}
       }
     }
 `

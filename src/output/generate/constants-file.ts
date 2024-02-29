@@ -1,4 +1,4 @@
-import { makeConstVarName } from '../../parsers'
+import { makeConstVarName, makeTypeName } from '../../parsers'
 import { ConfigFilePropertiesConfig, CustomTypesPropertiesConfig } from '../../types'
 import { saveContentToFile } from '../file-utils'
 
@@ -10,17 +10,20 @@ export function createConstantsFile(opts: {
   customPropsConfig: CustomTypesPropertiesConfig
 }) {
   const { dbPath, fileName, dbVarName, propsConfig, customPropsConfig } = opts
-  const constVarName = makeConstVarName(dbVarName)
+  const dbConstVarName = makeConstVarName(dbVarName)
+  const dbTypeName = makeTypeName(dbVarName)
   const propsWithValues = getPropsWithValues(customPropsConfig)
-  let content = `export const ${constVarName}_PROP_VALUES = ${propsWithValues}`
+  let content = `export const ${dbConstVarName}_PROP_VALUES = ${propsWithValues}`
   const propsToIds = getPropsToIds(propsConfig)
   const idsToProps = getIdsToProps(propsConfig)
   const propsToTypes = getPropsToTypes(propsConfig)
 
-  content += `\nexport const ${constVarName}_PROPS_TO_IDS = ${JSON.stringify(propsToIds, null, 2)}`
-  content += `\nexport const ${constVarName}_IDS_TO_PROPS = ${JSON.stringify(idsToProps, null, 2)}`
-  content += `\nexport const ${constVarName}_PROPS_TO_TYPES = ${JSON.stringify(propsToTypes, null, 2)}`
-  content += '\n'
+  content += `\nexport const ${dbConstVarName}_PROPS_TO_IDS = ${JSON.stringify(propsToIds, null, 2)} as const`
+  content += `\nexport const ${dbConstVarName}_IDS_TO_PROPS = ${JSON.stringify(idsToProps, null, 2)} as const`
+  content += `\nexport const ${dbConstVarName}_PROPS_TO_TYPES = ${JSON.stringify(propsToTypes, null, 2)} as const`
+  content += `\n
+  export type ${dbTypeName}DTOProperties = keyof typeof ${dbConstVarName}_PROPS_TO_IDS
+  `
 
   saveContentToFile(content, dbPath, fileName)
 }

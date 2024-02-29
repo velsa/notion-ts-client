@@ -1,4 +1,4 @@
-import { capitalizeVarName, makeConstVarName, normalizeTypeName } from '../../parsers'
+import { capitalizeVarName, makeConstVarName, makeTypeName } from '../../parsers'
 import { ConfigFilePropertiesConfig } from '../../types'
 
 export function getQueryTypes(dbTypeName: string, propsConfig: ConfigFilePropertiesConfig) {
@@ -71,7 +71,7 @@ function getDBCustomFilterType(dbTypeName: string, propsConfig: ConfigFileProper
         return
       }
 
-      const typePrefix = `${dbTypeName}${normalizeTypeName(prop.varName)}`
+      const typePrefix = `${dbTypeName}${makeTypeName(prop.varName)}`
 
       return `{ ${prop.varName}: ${typePrefix}PropertyFilter }`
     })
@@ -83,26 +83,30 @@ function getDBCustomFilterType(dbTypeName: string, propsConfig: ConfigFileProper
 function getCustomFilterTypes(dbTypeName: string, propsConfig: ConfigFilePropertiesConfig) {
   return Object.values(propsConfig)
     .map((prop) => {
-      const typePrefix = `${dbTypeName}${normalizeTypeName(prop.varName)}`
+      const typePrefix = `${dbTypeName}${makeTypeName(prop.varName)}`
 
       switch (prop._type) {
         case 'select':
-          return `type ${typePrefix}PropertyFilter =
+          return `\nexport type ${typePrefix}PropertyType = ${dbTypeName}Response['properties']['${prop._name}']['select']['name']
+
+type ${typePrefix}PropertyFilter =
   | {
-      equals: ${dbTypeName}Response['properties']['${prop._name}']['select']['name']
+      equals: ${typePrefix}PropertyType
     }
   | {
-      does_not_equal: ${dbTypeName}Response['properties']['${prop._name}']['select']['name']
+      does_not_equal: ${typePrefix}PropertyType
     }
   | ExistencePropertyFilter      
 `
         case 'multi_select':
-          return `type ${typePrefix}PropertyFilter =
+          return `\nexport type ${typePrefix}PropertyType = ${dbTypeName}Response['properties']['${prop._name}']['multi_select'][number]['name']
+
+type ${typePrefix}PropertyFilter =
   | {
-      contains: ${dbTypeName}Response['properties']['${prop._name}']['multi_select'][number]['name']
+      contains: ${typePrefix}PropertyType
     }
   | {
-      does_not_contain: ${dbTypeName}Response['properties']['${prop._name}']['multi_select'][number]['name']
+      does_not_contain: ${typePrefix}PropertyType
     }          
   | ExistencePropertyFilter
 `
