@@ -6,7 +6,7 @@ import {
   ListBlockChildrenResponse,
 } from '../types/notion-api.types'
 import { notionDatabaseQueryURL, notionPageApiURL, notionPageContentApiURL } from './notion-urls'
-import rateLimit from './rate-limit'
+import pThrottle from './p-throttle'
 
 export type DatabaseOptions = {
   // firebaseSecret: string
@@ -25,8 +25,18 @@ export abstract class GenericDatabaseClass<
 > {
   private notionApiHeaders: Record<string, string>
   // Using simple rate limiting (https://github.com/xavi-/node-simple-rate-limiter)
-  private rateLimitedFetch = rateLimit.promise(fetch).to(3).per(1000)
-  /** @private */
+  // private rateLimitedFetch = rateLimit.promise(fetch).to(3).per(1000)
+  private rateLimitedFetch = pThrottle({
+    // Notion API rate limit is 3 requests per second,
+    // we make it 2 to be on a safe side
+    limit: 2,
+    interval: 1000,
+    onDelay: () => {
+      console.log('Fetch reached interval limit, call is delayed')
+    },
+  })(fetch)
+
+  /** @private */ t
   protected abstract notionDatabaseId: string
   protected abstract queryRemapFilter(filter?: Record<string, unknown>): Record<string, unknown> | undefined
   protected abstract queryRemapSorts(sorts?: Record<string, string>[]): Record<string, string>[] | undefined

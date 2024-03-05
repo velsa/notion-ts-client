@@ -1,8 +1,10 @@
 import { AppendBlockChildrenParameters, ListBlockChildrenQueryParameters } from '../types/notion-api.types'
 
 export const normId = (id: string) => id.replace(/-/g, '')
+
 export const notionPageApiURL = (pageId?: string) =>
   pageId ? `https://api.notion.com/v1/pages/${normId(pageId)}` : `https://api.notion.com/v1/pages`
+
 export const notionPageContentApiURL = (
   pageId: string,
   opts?: ListBlockChildrenQueryParameters | AppendBlockChildrenParameters,
@@ -12,4 +14,5 @@ export const notionPageContentApiURL = (
     : `https://api.notion.com/v1/blocks/${normId(pageId)}/children`
 
 export const notionBlockApiURL = (blockId: string) => `https://api.notion.com/v1/blocks/${normId(blockId)}`
-export const notionDatabaseQueryURL = (id: string) => `https://api.notion.com/v1/databases/${id}/query`
+
+export const notionDatabaseQueryURL = (id: string) => `https://api.notion.com/v1/databases/${normId(id)}/query`

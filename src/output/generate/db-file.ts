@@ -1,4 +1,5 @@
 import { makeConstVarName } from '../../parsers'
+import { normId } from '../core/src/notion-urls'
 import { saveContentToFile } from '../file-utils'
 
 export function createDBFile(opts: { dbPath: string; fileName: string; dbTypeName: string; dbId: string }) {
@@ -20,7 +21,7 @@ export class ${dbTypeName}Database extends GenericDatabaseClass<
   constructor(options: DatabaseOptions) {
     super(options)
 
-    this.notionDatabaseId = '${dbId}'
+    this.notionDatabaseId = '${normId(dbId)}'
   }
 
   protected queryRemapFilter(filter?: Record<string, unknown>) {
