@@ -1,3 +1,4 @@
+// https://github.com/sindresorhus/p-throttle
 export class AbortError extends Error {
   constructor() {
     super('Throttled function aborted')
@@ -73,8 +74,7 @@ export default function pThrottle(opts: { limit: number; interval: number; stric
   return (function_) => {
     const throttled = function (...arguments_) {
       if (!throttled.isEnabled) {
-        // eslint-disable-next-line require-await
-        return (async () => function_.apply(this, arguments_))()
+        return (async () => await function_.apply(this, arguments_))()
       }
 
       let timeoutId
