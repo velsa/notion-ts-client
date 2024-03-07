@@ -30,37 +30,39 @@ import {
   OnlineEventsPatchDTO
 } from 'notion-sdk/dbs/online-events'
 
+// Use custom generated database class to work with your DB
 const db = new OnlineEventsDatabase({
   notionSecret: process.env.MY_NOTION_SECRET,
 });
-const pageId = "509931d4affa4f72beafaa6aac96f205"
-
-// Read the Notion DB page
-// and access fully typed properties using a custom DTO (Data Transfer Object)
-const pageResponse = await db.getPage(pageId);
-const page = new OnlineEventsResponseDTO(pageResponse);
-
-console.log(page.properties.shortDescription);
-
-// Update the Notion DB via a fully typed custom DTO
-// Note: for your convenience readOnly properties are not available on PatchDTO
-const pageUpdate = new OnlineEventsPatchDTO({
-  properties: {
-    organization: 'My Org'
-  }
-})
-await db.updatePage(pageId, pageUpdate)
 
 // Query the Notion DB using fully typed filter and sorts
 const queryResponse = await db.query({
   filter: { and: [
-    type: { contains: "Webinar" },
-    organization: { equals: "My Org" },
+    type: { contains: "Webinar" }, // <--- type safe!
+    organization: { equals: "My Org" }, // <--- type safe!
   ]},
   sorts: [{ property: "name", direction: "ascending" }],
 });
 
+// Access your page properties via custom generated ResponseDTO (Data Transfer Object)
 const pages = queryResponse.results.map((r) => new OnlineEventsResponseDTO(r));
+
+// The response from the database is in Notion format
+const pageResponse = await db.getPage(pages[0].id);
+
+// Again, use the custom generated ResponseDTO to access fully typed properties
+const page = new OnlineEventsResponseDTO(pageResponse);
+
+console.log(page.properties.shortDescription); // <--- type safe!
+
+// Update your Notion DB via a fully typed custom PatchDTO
+// Note: for your convenience readOnly properties are not available on PatchDTO
+const pageUpdate = new OnlineEventsPatchDTO({
+  properties: {
+    type: 'Podcast'
+  }
+})
+await db.updatePage(page.id, pageUpdate)
 ```
 
 The code looks nice, right? But there is much more under the hood.
@@ -146,7 +148,7 @@ The Typescript Clients will be generated in the specified directory.
 You can now access your Notion Databases in a fullproof and typesafe manner. As you should!
 
 > [!NOTE]
-> Every time **notion-ts-client** detects a new database that was added to your integration,
+> Every time **notion-ts-client** detects that a new database was added to your integration,
 > it will ask you if you want to generate the config and the SDK client for it.
 > If you answer No - the database will be added to the ignore list.
 
@@ -187,7 +189,12 @@ Create ANY kind of automations and advanced formulas using the power of Typescri
 Using Cloudflare Workers:
 
 ```ts
-import { OnlineEventsResponse, OnlineEventsResponseDTO } from 'notion-sdk/dbs/online-events'
+import {
+  OnlineEventsDatabase,
+  OnlineEventsResponse,
+  OnlineEventsResponseDTO,
+  OnlineEventsPatchDTO,
+} from 'notion-sdk/dbs/online-events'
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -227,7 +234,7 @@ This might present a problem for the production code. In order to avoid failures
 
 ### ALL schema changes in your Notion databases will be reflected in your SDKs:
 
-Next time you run the `generate` command – you will get an updated config file and a Client SDK, reflecting all the changes in your Notion databases. You might also see some Typescript errors in your code, since the types have changed. Now simply adapt your code to the changes! 😎
+Next time you run the `generate` command – you will get an updated config file and a Client SDK, reflecting all the changes in the configuration of your Notion databases. If some property types or select/multi_select options have changed - you may also see some Typescript errors in your code. So simply fix those errors to adapt your code to the changes! 😎
 
 ---
 
