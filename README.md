@@ -41,7 +41,7 @@ const queryResponse = await db.query({
     type: { contains: "Webinar" }, // <--- type safe!
     organization: { equals: "My Org" }, // <--- type safe!
   ]},
-  sorts: [{ property: "name", direction: "ascending" }],
+  sorts: [{ property: "name", direction: "ascending" }],  // <--- type safe!
 });
 
 // Access your page properties via custom generated ResponseDTO (Data Transfer Object)

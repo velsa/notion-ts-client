@@ -19,8 +19,8 @@ export async function updateConfigFile(configFile: string, dbConfigData: ConfigF
   if (
     numChanges === 0 &&
     isEqual(
-      mergedConfig.ignore.map((i) => i.id),
-      userConfigData.ignore.map((i) => i.id),
+      mergedConfig.ignore?.map((i) => i.id),
+      userConfigData.ignore?.map((i) => i.id),
     )
   ) {
     log('No changes detected. Not updating the config file.')
