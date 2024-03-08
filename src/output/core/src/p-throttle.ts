@@ -97,7 +97,7 @@ export default function pThrottle(opts: { limit: number; interval: number; stric
     }
 
     throttled.abort = () => {
-      for (const timeout of queue.keys()) {
+      for (const timeout of Array.from(queue.keys())) {
         clearTimeout(timeout)
         queue.get(timeout)(new AbortError())
       }
