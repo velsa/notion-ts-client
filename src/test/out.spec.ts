@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import { AfishaDatabase, AfishaResponseDTO } from '../../out/notion-sdk/dbs/afisha'
 
 describe('NotionSDK: AfishaDatabase', () => {
@@ -43,5 +44,11 @@ describe('NotionSDK: AfishaDatabase', () => {
     })
 
     expect(response.results.length).toBeGreaterThan(0)
+  })
+
+  test('NotionSDK: get page blocks recursively', async () => {
+    const blocks = await db.getPageBlocks('16e92772b45540079cb9c8c37ef28983')
+
+    expect(blocks.length).toBeGreaterThan(0)
   })
 })

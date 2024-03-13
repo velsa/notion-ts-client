@@ -1,6 +1,7 @@
 import {
   AppendBlockChildrenParameters,
   BlockObjectRequest,
+  BlockObjectResponse,
   CreatePageBodyParameters,
   ListBlockChildrenQueryParameters,
   ListBlockChildrenResponse,
@@ -12,6 +13,8 @@ export type DatabaseOptions = {
   // firebaseSecret: string
   notionSecret: string
 }
+
+export type BlockObjectResponseWithChildren = BlockObjectResponse & { children?: BlockObjectResponseWithChildren[] }
 
 export abstract class GenericDatabaseClass<
   DatabaseResponse,
@@ -100,6 +103,7 @@ export abstract class GenericDatabaseClass<
 
   /**
    * Get a page from the Notion database
+   *
    * @param id - Notion page id
    * @returns - Notion page data with properties. Use your custom DTO type to parse the data.
    *
@@ -127,6 +131,7 @@ export abstract class GenericDatabaseClass<
 
   /**
    * Update a page in the Notion database
+   *
    * @param id - Notion page id
    * @param patch - Patch data. Use your custom DTO type to create the patch data.
    *
@@ -158,6 +163,7 @@ export abstract class GenericDatabaseClass<
 
   /**
    * Create a page in the Notion database
+   *
    * @param meta - Page metadata and properties. Use your custom PatchDTO.
    * @param content - Page content – Notion blocks. See Notion API documentation for the block format.
    *
@@ -224,6 +230,7 @@ export abstract class GenericDatabaseClass<
 
   /**
    * Create a page in the Notion database
+   *
    * @param id - Page or block id
    * @param content - Page content – Notion blocks. See Notion API documentation for the block format.
    *
@@ -255,35 +262,52 @@ export abstract class GenericDatabaseClass<
   }
 
   /**
-   * Get page content as a block of blocks
+   * Get page content as blocks.
+   * Retrieves ALL page blocks in a single request.
    *
    * @param id - Notion page id
-   * @param opts - Pagination parameters
    *
    * @returns - Notion page content. See Notion API documentation for the response format.
    * https://developers.notion.com/docs/working-with-page-content#modeling-content-as-blocks
    *
    * @example
-   * const pageContent = await db.getBlockChildren('70b2b25b7f434306b5089486de5efced')
-   * const blocks = pageContent.results
+   * const blocks = await db.getPageBlocks('70b2b25b7f434306b5089486de5efced')
    *
    * console.log(blocks[0].has_children)
    */
-  async getBlockChildren(id: string, opts?: ListBlockChildrenQueryParameters): Promise<ListBlockChildrenResponse> {
-    // TODO: support recursive fetching of all blocks with children
-    const res = await this.rateLimitedFetch(notionPageContentApiURL(id, opts), {
-      method: 'GET',
-      headers: this.notionApiHeaders,
-    })
+  async getPageBlocks(id: string): Promise<Array<BlockObjectResponseWithChildren>> {
+    const blocks: BlockObjectResponseWithChildren[] = []
+    const opts: ListBlockChildrenQueryParameters = { page_size: 100 }
+    let listHasMore = false
 
-    if (!res.ok) {
-      console.error(await res.json())
-      throw new Error(
-        `Failed to get page content (${id}) (database id: ${this.notionDatabaseId}): ${res.status} ${res.statusText}`,
-      )
-    }
+    do {
+      const res = await this.rateLimitedFetch(notionPageContentApiURL(id, opts), {
+        method: 'GET',
+        headers: this.notionApiHeaders,
+      })
 
-    return await res.json()
+      if (!res.ok) {
+        console.error(await res.json())
+        throw new Error(
+          `Failed to get page content (${id}) (database id: ${this.notionDatabaseId}): ${res.status} ${res.statusText}`,
+        )
+      }
+
+      const list = (await res.json()) as ListBlockChildrenResponse
+
+      for (const block of list.results as BlockObjectResponseWithChildren[]) {
+        if (block.has_children) {
+          block['children'] = await this.getPageBlocks(block.id)
+        }
+
+        blocks.push(block)
+      }
+
+      listHasMore = list.has_more
+      opts.start_cursor = list.next_cursor
+    } while (listHasMore)
+
+    return blocks
   }
 
   // TODO: This is NoteMate Logic. Move it there!

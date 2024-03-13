@@ -1,11 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuites name="jest tests" tests="3" failures="0" errors="0" time="3.116">
-  <testsuite name="NotionSDK: AfishaDatabase" errors="0" failures="0" skipped="0" timestamp="2024-02-18T12:27:40" time="3.005" tests="3">
-    <testcase classname="NotionSDK: AfishaDatabase NotionSDK: getPage gets a page" name="NotionSDK: AfishaDatabase NotionSDK: getPage gets a page" time="0.417">
+<testsuites name="jest tests" tests="4" failures="1" errors="0" time="93.444">
+  <testsuite name="NotionSDK: AfishaDatabase" errors="0" failures="1" skipped="3" timestamp="2024-03-13T11:14:09" time="93.3" tests="4">
+    <testcase classname="NotionSDK: AfishaDatabase NotionSDK: getPage gets a page" name="NotionSDK: AfishaDatabase NotionSDK: getPage gets a page" time="0">
+      <skipped/>
     </testcase>
-    <testcase classname="NotionSDK: AfishaDatabase NotionSDK: getPage obeys Notion rate limit" name="NotionSDK: AfishaDatabase NotionSDK: getPage obeys Notion rate limit" time="1.117">
+    <testcase classname="NotionSDK: AfishaDatabase NotionSDK: getPage obeys Notion rate limit" name="NotionSDK: AfishaDatabase NotionSDK: getPage obeys Notion rate limit" time="0">
+      <skipped/>
     </testcase>
-    <testcase classname="NotionSDK: AfishaDatabase NotionSDK: query returns results" name="NotionSDK: AfishaDatabase NotionSDK: query returns results" time="0.361">
+    <testcase classname="NotionSDK: AfishaDatabase NotionSDK: query returns results" name="NotionSDK: AfishaDatabase NotionSDK: query returns results" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="NotionSDK: AfishaDatabase NotionSDK: get page blocks recursively" name="NotionSDK: AfishaDatabase NotionSDK: get page blocks recursively" time="91.941">
+      <failure>Error: thrown: &quot;Exceeded timeout of 70000 ms for a test.
+Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout.&quot;
+    at /Users/vels/dev/notion-ts-client/src/test/out.spec.ts:49:3
+    at _dispatchDescribe (/Users/vels/dev/notion-ts-client/node_modules/.pnpm/jest-circus@29.7.0/node_modules/jest-circus/build/index.js:91:26)
+    at describe (/Users/vels/dev/notion-ts-client/node_modules/.pnpm/jest-circus@29.7.0/node_modules/jest-circus/build/index.js:55:5)
+    at Object.&lt;anonymous&gt; (/Users/vels/dev/notion-ts-client/src/test/out.spec.ts:4:1)
+    at Runtime._execModule (/Users/vels/dev/notion-ts-client/node_modules/.pnpm/jest-runtime@29.7.0/node_modules/jest-runtime/build/index.js:1439:24)
+    at Runtime._loadModule (/Users/vels/dev/notion-ts-client/node_modules/.pnpm/jest-runtime@29.7.0/node_modules/jest-runtime/build/index.js:1022:12)
+    at Runtime.requireModule (/Users/vels/dev/notion-ts-client/node_modules/.pnpm/jest-runtime@29.7.0/node_modules/jest-runtime/build/index.js:882:12)
+    at jestAdapter (/Users/vels/dev/notion-ts-client/node_modules/.pnpm/jest-circus@29.7.0/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:77:13)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async runTestInternal (/Users/vels/dev/notion-ts-client/node_modules/.pnpm/jest-runner@29.7.0/node_modules/jest-runner/build/runTest.js:367:16)
+    at async runTest (/Users/vels/dev/notion-ts-client/node_modules/.pnpm/jest-runner@29.7.0/node_modules/jest-runner/build/runTest.js:444:34)</failure>
     </testcase>
   </testsuite>
 </testsuites>
