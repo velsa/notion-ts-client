@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   AppendBlockChildrenParameters,
   BlockObjectRequest,
@@ -39,7 +40,7 @@ export abstract class GenericDatabaseClass<
     },
   })(fetch)
 
-  /** @private */ t
+  /** @private */
   protected abstract notionDatabaseId: string
   protected abstract queryRemapFilter(filter?: Record<string, unknown>): Record<string, unknown> | undefined
   protected abstract queryRemapSorts(sorts?: Record<string, string>[]): Record<string, string>[] | undefined
@@ -87,7 +88,7 @@ export abstract class GenericDatabaseClass<
       sorts: this.queryRemapSorts(query['sorts']),
     }
     // console.log('Querying Notion database with:', JSON.stringify(notionQuery, null, 2))
-    const res = await this.rateLimitedFetch(notionDatabaseQueryURL(this.notionDatabaseId), {
+    const res: any = await this.rateLimitedFetch(notionDatabaseQueryURL(this.notionDatabaseId), {
       method: 'POST',
       headers: this.notionApiHeaders,
       body: JSON.stringify(notionQuery),
@@ -114,7 +115,7 @@ export abstract class GenericDatabaseClass<
    * console.log(page.properties.title)
    */
   async getPage(id: string): Promise<DatabaseResponse> {
-    const res = await this.rateLimitedFetch(notionPageApiURL(id), {
+    const res: any = await this.rateLimitedFetch(notionPageApiURL(id), {
       method: 'GET',
       headers: this.notionApiHeaders,
     })
@@ -145,7 +146,7 @@ export abstract class GenericDatabaseClass<
    * await db.updatePage('70b2b25b7f434306b5089486de5efced', patch)
    */
   async updatePage(id: string, patch: DatabasePatchDTO): Promise<DatabaseResponse> {
-    const res = await this.rateLimitedFetch(notionPageApiURL(id), {
+    const res: any = await this.rateLimitedFetch(notionPageApiURL(id), {
       method: 'PATCH',
       headers: this.notionApiHeaders,
       body: JSON.stringify(patch.__data),
@@ -181,7 +182,7 @@ export abstract class GenericDatabaseClass<
     meta: DatabasePatchDTO | CreatePageBodyParameters,
     content?: BlockObjectRequest[],
   ): Promise<DatabaseResponse> {
-    const res = await this.rateLimitedFetch(notionPageApiURL(), {
+    const res: any = await this.rateLimitedFetch(notionPageApiURL(), {
       method: 'POST',
       headers: this.notionApiHeaders,
       body: JSON.stringify({
@@ -212,7 +213,7 @@ export abstract class GenericDatabaseClass<
    * await db.archivePage('70b2b25b7f434306b5089486de5efced')
    */
   async archivePage(id: string): Promise<DatabaseResponse> {
-    const res = await this.rateLimitedFetch(notionPageApiURL(id), {
+    const res: any = await this.rateLimitedFetch(notionPageApiURL(id), {
       method: 'PATCH',
       headers: this.notionApiHeaders,
       body: JSON.stringify({ archived: true }),
@@ -243,7 +244,7 @@ export abstract class GenericDatabaseClass<
     content: BlockObjectRequest[],
     opts?: AppendBlockChildrenParameters,
   ): Promise<ListBlockChildrenResponse> {
-    const res = await this.rateLimitedFetch(notionPageContentApiURL(id, opts), {
+    const res: any = await this.rateLimitedFetch(notionPageContentApiURL(id, opts), {
       method: 'PATCH',
       headers: this.notionApiHeaders,
       body: JSON.stringify({
@@ -281,7 +282,7 @@ export abstract class GenericDatabaseClass<
     let listHasMore = false
 
     do {
-      const res = await this.rateLimitedFetch(notionPageContentApiURL(id, opts), {
+      const res: any = await this.rateLimitedFetch(notionPageContentApiURL(id, opts), {
         method: 'GET',
         headers: this.notionApiHeaders,
       })
@@ -304,7 +305,7 @@ export abstract class GenericDatabaseClass<
       }
 
       listHasMore = list.has_more
-      opts.start_cursor = list.next_cursor
+      opts.start_cursor = list.next_cursor ?? undefined
     } while (listHasMore)
 
     return blocks

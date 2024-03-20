@@ -69,9 +69,9 @@ export async function mergeConfigs(
     const dbChange = (value: MergeDbConfigResult['change']) =>
       (changes[dbId] = {
         name: updatedDbConfig._name,
-        varName: originalDbConfig?.varName,
+        varName: originalDbConfig?.varName ?? '',
         change: value,
-        properties: changes[dbId] ? changes[dbId].properties : {},
+        properties: changes[dbId]?.properties ?? {},
       })
     const originalDbConfig = original.databases[dbId]
 
@@ -79,7 +79,12 @@ export async function mergeConfigs(
       // Always update the DB name from Notion, read-only prop!
       if (updatedDbConfig._name !== originalDbConfig._name) {
         dbChange({ type: 'renamed', oldName: originalDbConfig._name, newName: updatedDbConfig._name })
-        mergedDbConfig[dbId]._name = updatedDbConfig._name
+
+        const conf = mergedDbConfig[dbId]
+
+        if (conf) {
+          conf._name = updatedDbConfig._name
+        }
       }
 
       for (const [propId, updatedPropConfig] of Object.entries(updatedDbConfig.properties)) {
@@ -112,11 +117,17 @@ export async function mergeConfigs(
             propChange({ type: 'retyped', oldType: originalPropConfig._type, newType: updatedPropConfig._type })
           }
 
-          mergedDbConfig[dbId].properties[propId]._name = updatedPropConfig._name
-          mergedDbConfig[dbId].properties[propId]._type = updatedPropConfig._type
+          const conf = mergedDbConfig[dbId]?.properties[propId]
+
+          if (conf) {
+            conf._name = updatedPropConfig._name
+            conf._type = updatedPropConfig._type
+          }
         } else {
           propChange({ type: 'added' })
-          mergedDbConfig[dbId].properties[propId] = updatedPropConfig
+          if (mergedDbConfig[dbId]) {
+            mergedDbConfig[dbId].properties[propId] = updatedPropConfig
+          }
         }
       }
     } else {
@@ -152,7 +163,7 @@ export async function mergeConfigs(
         name: originalDbConfig._name,
         varName: originalDbConfig.varName,
         change,
-        properties: changes[dbId] ? changes[dbId].properties : {},
+        properties: changes[dbId]?.properties ?? {},
       })
     const updatedDbConfig = updatedDbConfigs[dbId]
 

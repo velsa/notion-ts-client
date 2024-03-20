@@ -47,22 +47,17 @@ const queryResponse = await db.query({
 // Access your page properties via custom generated ResponseDTO (Data Transfer Object)
 const pages = queryResponse.results.map((r) => new OnlineEventsResponseDTO(r));
 
-// The response from the database is in Notion format
-const pageResponse = await db.getPage(pages[0].id);
-
-// Again, use the custom generated ResponseDTO to access fully typed properties
-const page = new OnlineEventsResponseDTO(pageResponse);
-
-console.log(page.properties.shortDescription); // <--- type safe!
+console.log(pages[0].properties.organization); // <--- type safe!
 
 // Update your Notion DB via a fully typed custom PatchDTO
 // Note: for your convenience readOnly properties are not available on PatchDTO
 const pageUpdate = new OnlineEventsPatchDTO({
   properties: {
-    type: 'Podcast'
+    organization: 'Some org'
   }
 })
-await db.updatePage(page.id, pageUpdate)
+
+await db.updatePage(pages[0].id, pageUpdate)
 ```
 
 The code looks nice, right? But there is much more under the hood.

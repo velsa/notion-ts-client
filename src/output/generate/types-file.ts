@@ -11,7 +11,7 @@ export function createTypesFile(opts: {
   fileName: string
   dbTypeName: string
   propsConfig: ConfigFilePropertiesConfig
-  customPropsConfig: CustomTypesPropertiesConfig
+  customPropsConfig?: CustomTypesPropertiesConfig
 }) {
   const { dbPath, fileName, dbTypeName, propsConfig, customPropsConfig } = opts
   const imports = getTypesFileImports(dbTypeName, propsConfig)
@@ -117,14 +117,20 @@ function getImportType(type: string, name?: string) {
 
 function getTypesFileProperties(
   propsConfig: ConfigFilePropertiesConfig,
-  customPropsConfig: CustomTypesPropertiesConfig,
+  customPropsConfig?: CustomTypesPropertiesConfig,
 ) {
+  if (!customPropsConfig) {
+    throw new Error('customPropsConfig is required')
+  }
+
   const properties = Object.entries(propsConfig)
     .map(([propId, propConfig]) => {
-      const propType = getPropertyType(propConfig._type, customPropsConfig[propId])
+      if (customPropsConfig[propId] !== undefined) {
+        const propType = getPropertyType(propConfig._type, customPropsConfig[propId])
 
-      if (propType) {
-        return `${PROPERTIES_INDENT}"${propConfig._name}": ${propType}`
+        if (propType) {
+          return `${PROPERTIES_INDENT}"${propConfig._name}": ${propType}`
+        }
       }
     })
     .filter((p) => p !== undefined)
@@ -134,7 +140,7 @@ function getTypesFileProperties(
 }
 
 function getPropertyType(type: string, propConfig?: CustomTypesPropertyConfig) {
-  const typesUnion = (propConfig: CustomTypesPropertyConfig) =>
+  const typesUnion = (propConfig?: CustomTypesPropertyConfig) =>
     propConfig?.options
       .map(({ name, color }) => `{ id: StringRequest, name: '${name}', color: '${color}' }`)
       .join(' | ')

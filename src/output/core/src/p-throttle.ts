@@ -1,3 +1,5 @@
+/* eslint-disable prefer-spread */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // https://github.com/sindresorhus/p-throttle
 export class AbortError extends Error {
   constructor() {
@@ -41,13 +43,13 @@ export default function pThrottle(opts: { limit: number; interval: number; stric
     return currentTick - now
   }
 
-  const strictTicks = []
+  const strictTicks: number[] = []
 
   function strictDelay() {
     const now = Date.now()
 
     // Clear the queue if there's a significant delay since the last execution
-    if (strictTicks.length > 0 && now - strictTicks.at(-1) > interval) {
+    if (strictTicks.length > 0 && now - (strictTicks.at(-1) ?? 0) > interval) {
       strictTicks.length = 0
     }
 
@@ -58,8 +60,8 @@ export default function pThrottle(opts: { limit: number; interval: number; stric
       return 0
     }
 
-    // Calculate the next execution time based on the first item in the queue
-    const nextExecutionTime = strictTicks[0] + interval
+    // Check if strictTicks is not empty before accessing its first element
+    const nextExecutionTime = (strictTicks[0] ?? 0) + interval
 
     // Shift the queue and add the new execution time
     strictTicks.shift()
@@ -71,17 +73,17 @@ export default function pThrottle(opts: { limit: number; interval: number; stric
 
   const getDelay = strict ? strictDelay : windowedDelay
 
-  return (function_) => {
-    const throttled = function (...arguments_) {
+  return (function_: { apply: (arg0: unknown, arg1: unknown[]) => unknown }) => {
+    const throttled = (...arguments_: unknown[]) => {
       if (!throttled.isEnabled) {
-        return (async () => await function_.apply(this, arguments_))()
+        return (async () => await function_.apply(null, arguments_))()
       }
 
-      let timeoutId
+      let timeoutId: NodeJS.Timeout
 
       return new Promise((resolve, reject) => {
         const execute = () => {
-          resolve(function_.apply(this, arguments_))
+          resolve(function_.apply(null, arguments_))
           queue.delete(timeoutId)
         }
         const delay = getDelay()

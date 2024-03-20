@@ -4,7 +4,7 @@ import { mergeConfigs } from '../parsers'
 import { ConfigFile, ConfigFileDatabasesConfig } from '../types'
 import { log, logError, logSuccess } from './log'
 
-const isEqual = <T>(a: T[], b: T[]) => JSON.stringify(a?.sort()) === JSON.stringify(b?.sort())
+const isEqual = <T>(a?: T[], b?: T[]) => JSON.stringify(a?.sort()) === JSON.stringify(b?.sort())
 
 export async function updateConfigFile(configFile: string, dbConfigData: ConfigFileDatabasesConfig) {
   if (!fs.existsSync(configFile)) {

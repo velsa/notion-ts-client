@@ -18,8 +18,6 @@ export class ${dbTypeName}ResponseDTO {
   id: ${dbTypeName}Response['id']
   title: ${dbTypeName}Response['title']
   description: ${dbTypeName}Response['description']
-  icon: ${dbTypeName}Response['icon']
-  cover: ${dbTypeName}Response['cover']
   parent: ${dbTypeName}Response['parent']
   createdBy: ${dbTypeName}Response['created_by']
   lastEditedBy: ${dbTypeName}Response['last_edited_by']
@@ -36,8 +34,6 @@ export class ${dbTypeName}ResponseDTO {
     this.id = res.id
     this.title = res.title
     this.description = res.description
-    this.icon = res.icon
-    this.cover = res.cover
     this.parent = res.parent
     this.createdBy = res.created_by
     this.lastEditedBy = res.last_edited_by
@@ -48,6 +44,26 @@ export class ${dbTypeName}ResponseDTO {
     this.url = res.url
     this.publicUrl = res.public_url
     this.properties = new ${dbTypeName}PropertiesResponseDTO(res.properties)
+  }
+
+  get cover() {
+    return {
+      type: this.__data.cover?.type,
+      url: this.__data.cover.type === 'external' ? this.__data.cover?.external?.url : this.__data.cover?.file?.url,
+    }
+  }
+
+  get icon() {
+    return {
+      type: this.__data.icon?.type,
+      url:
+        this.__data.icon.type === 'external'
+          ? this.__data.icon?.external?.url
+          : this.__data.icon.type === 'file'
+            ? this.__data.icon?.file?.url
+            : undefined,
+      emoji: this.__data.icon.type === 'emoji' ? this.__data.icon?.emoji : undefined,
+    }
   }
 }
   

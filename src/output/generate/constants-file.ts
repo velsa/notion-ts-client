@@ -7,7 +7,7 @@ export function createConstantsFile(opts: {
   fileName: string
   dbVarName: string
   propsConfig: ConfigFilePropertiesConfig
-  customPropsConfig: CustomTypesPropertiesConfig
+  customPropsConfig?: CustomTypesPropertiesConfig
 }) {
   const { dbPath, fileName, dbVarName, propsConfig, customPropsConfig } = opts
   const dbConstVarName = makeConstVarName(dbVarName)
@@ -28,7 +28,11 @@ export function createConstantsFile(opts: {
   saveContentToFile(content, dbPath, fileName)
 }
 
-function getPropsWithValues(customPropsConfig: CustomTypesPropertiesConfig) {
+function getPropsWithValues(customPropsConfig?: CustomTypesPropertiesConfig) {
+  if (!customPropsConfig) {
+    throw new Error('customPropsConfig is required')
+  }
+
   let content = '{'
 
   for (const propConfig of Object.values(customPropsConfig)) {

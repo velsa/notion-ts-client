@@ -80,7 +80,11 @@ export function generateClients(sdkPath: string, notionResJSON: SearchResponse, 
   logSuccess(`\nNotion Typescript clients have been generated in ${chalk.yellow(sdkPath)}`)
 }
 
-function buildOriginDir(appPath: string) {
+function buildOriginDir(appPath?: string) {
+  if (!appPath) {
+    throw new Error('appPath is required')
+  }
+
   const runDir = path.parse(appPath).dir
   const parts = runDir.split(path.sep)
   const last = parts[parts.length - 1]
