@@ -1,3 +1,4 @@
+import { confirm } from '@inquirer/prompts'
 import { log, logWarn } from '../cli/log'
 import {
   DatabaseObjectResponse,
@@ -78,4 +79,41 @@ export function moveDefaultReadOnlyPropertiesToTheEnd(dbConfigs: ConfigFileDatab
       dbConfig.properties[propId] = propConfig
     }
   }
+}
+
+export async function confirmNewDatabases(originalConfig: ConfigFile, newConfig: ConfigFile) {
+  const resultConfig: ConfigFile = { ignore: originalConfig.ignore, databases: {} }
+
+  for (const [dbId, newDbConfig] of Object.entries(newConfig.databases)) {
+    if (originalConfig?.databases[dbId]) {
+      resultConfig.databases[dbId] = newDbConfig
+    } else {
+      if (originalConfig?.ignore?.some((ignoredDb) => ignoredDb.id === dbId)) {
+        continue
+      }
+
+      logWarn(`New database found: ${newDbConfig._name} (${dbId})`)
+
+      const isAdd = await confirm({
+        message: `Add the new database "${newDbConfig._name}" (${dbId}) to the config?\n`,
+        transformer: (value: boolean) => (value ? 'Yes' : 'No, add to ignore list'),
+        default: true,
+      })
+
+      if (isAdd) {
+        resultConfig.databases[dbId] = newDbConfig
+      } else {
+        if (!resultConfig.ignore) {
+          resultConfig.ignore = []
+        }
+
+        resultConfig.ignore.push({
+          name: newDbConfig._name,
+          id: dbId,
+        })
+      }
+    }
+  }
+
+  return resultConfig
 }

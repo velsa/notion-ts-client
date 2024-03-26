@@ -1,6 +1,6 @@
 import chalk from 'chalk'
 import fs from 'fs'
-import { createConfigFromNotionDatabases, moveDefaultReadOnlyPropertiesToTheEnd } from '../parsers'
+import { confirmNewDatabases, createConfigFromNotionDatabases, moveDefaultReadOnlyPropertiesToTheEnd } from '../parsers'
 import { ConfigFile } from '../types'
 import { log, logError, logSuccess } from './log'
 import { fetchNotionDatabases } from './notion-api'
@@ -16,15 +16,13 @@ export async function initConfigFile(options: ProgramOptions) {
 
   const notionResJSON = await fetchNotionDatabases(options.secret)
   const dbConfigData = createConfigFromNotionDatabases(notionResJSON, {} as ConfigFile)
+  // Will essentially ask the user to confirm every database
+  const newConfig = await confirmNewDatabases({ ignore: [], databases: {} }, { databases: dbConfigData })
 
-  moveDefaultReadOnlyPropertiesToTheEnd(dbConfigData)
-
-  const fileConfig = {
-    databases: dbConfigData,
-  }
+  moveDefaultReadOnlyPropertiesToTheEnd(newConfig.databases)
 
   log(`Saving databases config...`)
-  fs.writeFileSync(options.config, JSON.stringify(fileConfig, null, 2))
+  fs.writeFileSync(options.config, JSON.stringify(newConfig, null, 2))
   logSuccess('Config file generated!')
   log(
     `\nYou can now edit this file and change the ${chalk.yellow('"varName"')} and ${chalk.yellow('"readOnly"')} ` +

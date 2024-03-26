@@ -1,9 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { confirm } from '@inquirer/prompts'
-import { ConfigFile, ConfigFileDatabasesConfig } from '../types'
+import { ConfigFileDatabasesConfig } from '../types'
 
 interface MergeConfigsResult {
-  mergedConfig: ConfigFile
+  mergedDbConfigs: ConfigFileDatabasesConfig
   changes: Record<string, MergeDbConfigResult>
 }
 
@@ -57,12 +56,11 @@ interface MergePropertyConfigResult {
  * @param updated retrieved from Notion
  * @returns merged config and changes
  */
-export async function mergeConfigs(
-  original: ConfigFile,
+export async function mergeDatabaseConfigs(
+  originalDbConfigs: ConfigFileDatabasesConfig,
   updatedDbConfigs: ConfigFileDatabasesConfig,
 ): Promise<MergeConfigsResult> {
-  const merged = JSON.parse(JSON.stringify(original)) as ConfigFile
-  const mergedDbConfig = merged.databases
+  const mergedDbConfigs = JSON.parse(JSON.stringify(originalDbConfigs)) as ConfigFileDatabasesConfig
   const changes: MergeConfigsResult['changes'] = {}
 
   for (const [dbId, updatedDbConfig] of Object.entries(updatedDbConfigs)) {
@@ -73,14 +71,14 @@ export async function mergeConfigs(
         change: value,
         properties: changes[dbId]?.properties ?? {},
       })
-    const originalDbConfig = original.databases[dbId]
+    const originalDbConfig = originalDbConfigs[dbId]
 
     if (originalDbConfig) {
       // Always update the DB name from Notion, read-only prop!
       if (updatedDbConfig._name !== originalDbConfig._name) {
         dbChange({ type: 'renamed', oldName: originalDbConfig._name, newName: updatedDbConfig._name })
 
-        const conf = mergedDbConfig[dbId]
+        const conf = mergedDbConfigs[dbId]
 
         if (conf) {
           conf._name = updatedDbConfig._name
@@ -88,24 +86,23 @@ export async function mergeConfigs(
       }
 
       for (const [propId, updatedPropConfig] of Object.entries(updatedDbConfig.properties)) {
-        const propChange = (change: MergePropertyConfigResult['change']) =>
-          (changes[dbId] = changes[dbId]
-            ? {
-                ...changes[dbId],
-                properties: {
-                  ...changes[dbId].properties,
-                  [propId]: { name: updatedPropConfig._name, varName: updatedPropConfig.varName, change },
-                },
-              }
-            : {
-                name: updatedDbConfig._name,
-                varName: originalPropConfig?.varName,
-                change: undefined,
-                properties: {
-                  [propId]: { name: updatedPropConfig._name, varName: updatedPropConfig.varName, change },
-                },
-              })
         const originalPropConfig = originalDbConfig.properties[propId]
+        const propChange = (change: MergePropertyConfigResult['change']) => {
+          const dbChanges = changes[dbId]
+
+          if (dbChanges) {
+            dbChanges.properties[propId] = { name: updatedPropConfig._name, varName: updatedPropConfig.varName, change }
+          } else {
+            changes[dbId] = {
+              name: updatedDbConfig._name,
+              varName: originalPropConfig?.varName ?? '',
+              change: undefined,
+              properties: {
+                [propId]: { name: updatedPropConfig._name, varName: updatedPropConfig.varName, change },
+              },
+            }
+          }
+        }
 
         if (originalPropConfig) {
           // Always update the prop name and type from Notion, read-only props!
@@ -117,7 +114,7 @@ export async function mergeConfigs(
             propChange({ type: 'retyped', oldType: originalPropConfig._type, newType: updatedPropConfig._type })
           }
 
-          const conf = mergedDbConfig[dbId]?.properties[propId]
+          const conf = mergedDbConfigs[dbId]?.properties[propId]
 
           if (conf) {
             conf._name = updatedPropConfig._name
@@ -125,39 +122,21 @@ export async function mergeConfigs(
           }
         } else {
           propChange({ type: 'added' })
-          if (mergedDbConfig[dbId]) {
-            mergedDbConfig[dbId].properties[propId] = updatedPropConfig
+
+          const conf = mergedDbConfigs[dbId]
+
+          if (conf) {
+            conf.properties[propId] = updatedPropConfig
           }
         }
       }
     } else {
-      if (original.ignore?.some((ignoredDb) => ignoredDb.id === dbId)) {
-        continue
-      }
-
-      const isAdd = await confirm({
-        message: `Add the new database "${updatedDbConfig._name}" (${dbId}) to the config?\n`,
-        transformer: (value: boolean) => (value ? 'Yes' : 'No, add to ignore list'),
-        default: true,
-      })
-
-      if (isAdd) {
-        dbChange({ type: 'added' })
-        mergedDbConfig[dbId] = updatedDbConfig
-      } else {
-        if (!merged.ignore) {
-          merged.ignore = []
-        }
-
-        merged.ignore.push({
-          name: updatedDbConfig._name,
-          id: dbId,
-        })
-      }
+      dbChange({ type: 'added' })
+      mergedDbConfigs[dbId] = updatedDbConfig
     }
   }
 
-  for (const [dbId, originalDbConfig] of Object.entries(original.databases)) {
+  for (const [dbId, originalDbConfig] of Object.entries(originalDbConfigs)) {
     const dbChange = (change: MergeDbConfigResult['change']) =>
       (changes[dbId] = {
         name: originalDbConfig._name,
@@ -169,39 +148,40 @@ export async function mergeConfigs(
 
     if (updatedDbConfig) {
       for (const [propId, originalPropConfig] of Object.entries(originalDbConfig.properties)) {
-        const propChange = (change: MergePropertyConfigResult['change']) =>
-          (changes[dbId] = changes[dbId]
-            ? {
-                ...changes[dbId],
-                properties: {
-                  ...changes[dbId].properties,
-                  [propId]: { name: originalPropConfig._name, varName: originalPropConfig.varName, change },
-                },
-              }
-            : {
-                name: originalDbConfig._name,
-                varName: originalDbConfig.varName,
-                change: undefined,
-                properties: {
-                  [propId]: { name: originalPropConfig._name, varName: originalPropConfig.varName, change },
-                },
-              })
+        const propChange = (change: MergePropertyConfigResult['change']) => {
+          const dbChanges = changes[dbId]
+
+          if (dbChanges) {
+            dbChanges.properties[propId] = {
+              name: originalPropConfig._name,
+              varName: originalPropConfig.varName,
+              change,
+            }
+          } else {
+            changes[dbId] = {
+              name: originalDbConfig._name,
+              varName: originalDbConfig.varName,
+              change: undefined,
+              properties: {
+                [propId]: { name: originalPropConfig._name, varName: originalPropConfig.varName, change },
+              },
+            }
+          }
+        }
 
         if (updatedDbConfig.properties[propId] === undefined) {
           propChange({ type: 'removed' })
-          delete mergedDbConfig[dbId].properties[propId]
+          delete mergedDbConfigs[dbId]?.properties[propId]
         }
       }
     } else {
       dbChange({ type: 'removed' })
-      delete mergedDbConfig[dbId]
+      delete mergedDbConfigs[dbId]
     }
   }
 
-  const mergedConfig = { ignore: merged.ignore, databases: mergedDbConfig }
-
   return {
-    mergedConfig,
+    mergedDbConfigs,
     changes,
   }
 }

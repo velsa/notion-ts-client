@@ -66,7 +66,11 @@ function getDTOFileType(dbTypeName: string, dbPropsConfig: ConfigFilePropertiesC
   const content = Object.values(dbPropsConfig).reduce((acc, propConfig) => {
     let typeValue
 
-    if (PATCH_IGNORE_PROPS.includes(propConfig._type) || propConfig.readOnly || propConfig._type === 'button') {
+    if (
+      PATCH_IGNORE_PROPS.includes(propConfig._type) ||
+      propConfig.readOnly ||
+      ['button', 'rollup'].includes(propConfig._type)
+    ) {
       return acc
     }
 
@@ -92,7 +96,11 @@ function getDTOFileCode(dbPropsConfig: ConfigFilePropertiesConfig) {
   const content = Object.entries(dbPropsConfig).reduce((acc, [propId, propConfig]) => {
     let objValue
 
-    if (PATCH_IGNORE_PROPS.includes(propConfig._type) || propConfig.readOnly || propConfig._type === 'button') {
+    if (
+      PATCH_IGNORE_PROPS.includes(propConfig._type) ||
+      propConfig.readOnly ||
+      ['button', 'rollup'].includes(propConfig._type)
+    ) {
       return acc
     }
 

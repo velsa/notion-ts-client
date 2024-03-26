@@ -125,12 +125,10 @@ function getTypesFileProperties(
 
   const properties = Object.entries(propsConfig)
     .map(([propId, propConfig]) => {
-      if (customPropsConfig[propId] !== undefined) {
-        const propType = getPropertyType(propConfig._type, customPropsConfig[propId])
+      const propType = getPropertyType(propConfig._type, customPropsConfig[propId])
 
-        if (propType) {
-          return `${PROPERTIES_INDENT}"${propConfig._name}": ${propType}`
-        }
+      if (propType) {
+        return `${PROPERTIES_INDENT}"${propConfig._name}": ${propType}`
       }
     })
     .filter((p) => p !== undefined)

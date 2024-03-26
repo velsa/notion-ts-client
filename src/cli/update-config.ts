@@ -1,6 +1,6 @@
 import chalk from 'chalk'
 import fs from 'fs'
-import { mergeConfigs } from '../parsers'
+import { confirmNewDatabases, mergeDatabaseConfigs, moveDefaultReadOnlyPropertiesToTheEnd } from '../parsers'
 import { ConfigFile, ConfigFileDatabasesConfig } from '../types'
 import { log, logError, logSuccess } from './log'
 
@@ -12,20 +12,25 @@ export async function updateConfigFile(configFile: string, dbConfigData: ConfigF
     process.exit(1)
   }
 
-  const userConfigData = readUserConfig(configFile)
-  const { mergedConfig, changes } = await mergeConfigs(userConfigData, dbConfigData)
+  const userConfig = readUserConfig(configFile)
+  const newConfig = await confirmNewDatabases(userConfig, { databases: dbConfigData })
+  const { mergedDbConfigs, changes } = await mergeDatabaseConfigs(userConfig.databases, newConfig.databases)
   const numChanges = Object.keys(changes).length
+
+  moveDefaultReadOnlyPropertiesToTheEnd(mergedDbConfigs)
+
+  const resultConfig = { ignore: newConfig.ignore, databases: mergedDbConfigs }
 
   if (
     numChanges === 0 &&
     isEqual(
-      mergedConfig.ignore?.map((i) => i.id),
-      userConfigData.ignore?.map((i) => i.id),
+      resultConfig.ignore?.map((i) => i.id),
+      userConfig.ignore?.map((i) => i.id),
     )
   ) {
     log('No changes detected. Not updating the config file.')
   } else {
-    fs.writeFileSync(configFile, JSON.stringify(mergedConfig, null, 2))
+    fs.writeFileSync(configFile, JSON.stringify(resultConfig, null, 2))
     logSuccess('Updated config file.')
 
     if (numChanges !== 0) {
@@ -33,7 +38,7 @@ export async function updateConfigFile(configFile: string, dbConfigData: ConfigF
     }
   }
 
-  return mergedConfig
+  return resultConfig
 }
 
 export function readUserConfig(configPath: string) {

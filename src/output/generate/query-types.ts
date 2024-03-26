@@ -7,6 +7,7 @@ export function getQueryTypes(dbTypeName: string, propsConfig: ConfigFilePropert
   const customPropFilterType = getDBCustomFilterType(dbTypeName, propsConfig)
 
   return `${customFilterTypes}
+
 ${customPropFilterType}
 
 export type ${dbTypeName}Query = Omit<QueryDatabaseBodyParameters, 'filter' | 'sorts'> & {
@@ -77,7 +78,7 @@ function getDBCustomFilterType(dbTypeName: string, propsConfig: ConfigFileProper
     })
     .filter((t) => t !== undefined)
 
-  return `type ${dbTypeName}PropertyFilter = ${unionTypes.join(' | ')}`
+  return `export type ${dbTypeName}PropertyFilter = ${unionTypes.join(' | ')}`
 }
 
 function getCustomFilterTypes(dbTypeName: string, propsConfig: ConfigFilePropertiesConfig) {
