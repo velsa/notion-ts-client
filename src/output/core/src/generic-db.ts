@@ -25,6 +25,7 @@ export abstract class GenericDatabaseClass<
     sorts?: Record<string, string>[]
   },
   DatabaseQueryResponse,
+  DatabaseDTOProperties extends string,
   // DatabaseWebHookOptions,
 > {
   private notionApiHeaders: Record<string, string>
@@ -43,7 +44,10 @@ export abstract class GenericDatabaseClass<
   /** @private */
   protected abstract notionDatabaseId: string
   protected abstract queryRemapFilter(filter?: Record<string, unknown>): Record<string, unknown> | undefined
-  protected abstract queryRemapSorts(sorts?: Record<string, string>[]): Record<string, string>[] | undefined
+  protected abstract queryRemapSorts(
+    sorts?: Record<string, string | undefined>[],
+  ): Record<string, string | undefined>[] | undefined
+  protected abstract queryRemapFilterProperties(filterProps?: string[]): string[] | undefined
 
   constructor(opts: DatabaseOptions) {
     if (!opts.notionSecret) {
@@ -81,18 +85,21 @@ export abstract class GenericDatabaseClass<
    *
    * const pages = res.results.map((r) => new MyDatabaseResponseDTO(r))
    */
-  async query(query: DatabaseQuery): Promise<DatabaseQueryResponse> {
+  async query(query: DatabaseQuery, filterProps?: DatabaseDTOProperties[]): Promise<DatabaseQueryResponse> {
     const notionQuery = {
       ...query,
       filter: this.queryRemapFilter(query['filter']),
       sorts: this.queryRemapSorts(query['sorts']),
     }
     // console.log('Querying Notion database with:', JSON.stringify(notionQuery, null, 2))
-    const res: any = await this.rateLimitedFetch(notionDatabaseQueryURL(this.notionDatabaseId), {
-      method: 'POST',
-      headers: this.notionApiHeaders,
-      body: JSON.stringify(notionQuery),
-    })
+    const res: any = await this.rateLimitedFetch(
+      notionDatabaseQueryURL(this.notionDatabaseId, this.queryRemapFilterProperties(filterProps)),
+      {
+        method: 'POST',
+        headers: this.notionApiHeaders,
+        body: JSON.stringify(notionQuery),
+      },
+    )
 
     if (!res.ok) {
       console.error(await res.json())

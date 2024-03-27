@@ -8,13 +8,14 @@ export function createDBFile(opts: { dbPath: string; fileName: string; dbTypeNam
   const content = `import { ${dbTypeName}Response, ${dbTypeName}Query, ${dbTypeName}QueryResponse } from './types'
 import { ${dbTypeName}PatchDTO } from './patch.dto'
 import { GenericDatabaseClass, DatabaseOptions } from '../../core/src/generic-db'
-import { ${constVarName}_PROPS_TO_TYPES, ${constVarName}_PROPS_TO_IDS } from './constants'
+import { ${constVarName}_PROPS_TO_TYPES, ${constVarName}_PROPS_TO_IDS, ${dbTypeName}DTOProperties } from './constants'
 
 export class ${dbTypeName}Database extends GenericDatabaseClass<
   ${dbTypeName}Response,
   ${dbTypeName}PatchDTO,
   ${dbTypeName}Query,
-  ${dbTypeName}QueryResponse
+  ${dbTypeName}QueryResponse,
+  ${dbTypeName}DTOProperties
 > {
   protected notionDatabaseId: string
   
@@ -25,11 +26,11 @@ export class ${dbTypeName}Database extends GenericDatabaseClass<
   }
 
   protected queryRemapFilter(filter?: Record<string, unknown>) {
-    const notionFilter = {}
-
     if (!filter) {
       return undefined
     }
+
+    const notionFilter = {} as any
 
     Object.entries(filter).forEach(([key, value]) => {
       if (key === 'and' || key === 'or') {
@@ -43,8 +44,8 @@ export class ${dbTypeName}Database extends GenericDatabaseClass<
           throw new Error(\`${dbTypeName}: Invalid filter key: \${key}\`)
         }
 
-        const propType = ${constVarName}_PROPS_TO_TYPES[key];
-        const propId = ${constVarName}_PROPS_TO_IDS[key];
+        const propType = ${constVarName}_PROPS_TO_TYPES[key as keyof typeof ${constVarName}_PROPS_TO_TYPES];
+        const propId = ${constVarName}_PROPS_TO_IDS[key as keyof typeof ${constVarName}_PROPS_TO_IDS];
 
         notionFilter['property'] = propId
         notionFilter[propType] = value
@@ -55,20 +56,20 @@ export class ${dbTypeName}Database extends GenericDatabaseClass<
   }
 
   protected queryRemapSorts(sorts?: Record<string, string>[]) {
-    if (!sorts) {
-      return undefined
-    }
-
     return sorts?.map((sort) => {
       if ('property' in sort) {
         return {
-          property: ${constVarName}_PROPS_TO_IDS[sort.property],
+          property: ${constVarName}_PROPS_TO_IDS[sort.property as keyof typeof ${constVarName}_PROPS_TO_IDS],
           direction: sort.direction,
         }
       }
 
       return sort
     })
+  }
+
+  protected queryRemapFilterProperties(filterProps?: string[]) {
+    return filterProps?.map((p) => ${constVarName}_PROPS_TO_IDS[p as keyof typeof ${constVarName}_PROPS_TO_IDS])
   }
 }
 `
