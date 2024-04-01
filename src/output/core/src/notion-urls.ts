@@ -17,5 +17,7 @@ export const notionBlockApiURL = (blockId: string) => `https://api.notion.com/v1
 
 export const notionDatabaseQueryURL = (id: string, filterProps?: string[]) =>
   filterProps?.length
-    ? `https://api.notion.com/v1/databases/${normId(id)}/query?${new URLSearchParams(filterProps.map((p) => ['filter_properties', p])).toString()}`
+    ? `https://api.notion.com/v1/databases/${normId(id)}/query?${new URLSearchParams(
+        filterProps.map((p) => ['filter_properties', decodeURIComponent(p)]) as [string, string][],
+      ).toString()}`
     : `https://api.notion.com/v1/databases/${normId(id)}/query`

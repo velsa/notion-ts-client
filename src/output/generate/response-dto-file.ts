@@ -9,7 +9,7 @@ export function createResponseDTOFile(opts: {
 }) {
   const { dbPath, fileName, dbTypeName, propsConfig } = opts
   const imports = getDTOFileImports(dbTypeName)
-  const contructorCode = getDTOConstructorFileCode(propsConfig)
+  const constructorCode = getDTOConstructorFileCode(propsConfig)
   const code = getDTOFileCode(propsConfig)
   const content = `${imports}
 
@@ -49,7 +49,7 @@ export class ${dbTypeName}ResponseDTO {
   get cover() {
     return {
       type: this.__data.cover?.type,
-      url: this.__data.cover.type === 'external' ? this.__data.cover?.external?.url : this.__data.cover?.file?.url,
+      url: this.__data.cover?.type === 'external' ? this.__data.cover?.external?.url : this.__data.cover?.file?.url,
     }
   }
 
@@ -57,12 +57,12 @@ export class ${dbTypeName}ResponseDTO {
     return {
       type: this.__data.icon?.type,
       url:
-        this.__data.icon.type === 'external'
+        this.__data.icon?.type === 'external'
           ? this.__data.icon?.external?.url
-          : this.__data.icon.type === 'file'
+          : this.__data.icon?.type === 'file'
             ? this.__data.icon?.file?.url
             : undefined,
-      emoji: this.__data.icon.type === 'emoji' ? this.__data.icon?.emoji : undefined,
+      emoji: this.__data.icon?.type === 'emoji' ? this.__data.icon?.emoji : undefined,
     }
   }
 }
@@ -73,7 +73,7 @@ export class ${dbTypeName}PropertiesResponseDTO {
 
   constructor(props: ${dbTypeName}Response['properties']) {
     this.__props = props
-${contructorCode}
+${constructorCode}
   }
 ${code}
 }

@@ -87,8 +87,9 @@ function getCustomFilterTypes(dbTypeName: string, propsConfig: ConfigFilePropert
       const typePrefix = `${dbTypeName}${makeTypeName(prop.varName)}`
 
       switch (prop._type) {
+        case 'status':
         case 'select':
-          return `\nexport type ${typePrefix}PropertyType = ${dbTypeName}Response['properties']['${prop._name}']['select']['name']
+          return `\nexport type ${typePrefix}PropertyType = ${dbTypeName}Response['properties']['${prop._name}']['${prop._type}']['name']
 
 type ${typePrefix}PropertyFilter =
   | {
