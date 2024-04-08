@@ -17,6 +17,18 @@ export type DatabaseOptions = {
 
 export type BlockObjectResponseWithChildren = BlockObjectResponse & { children?: BlockObjectResponseWithChildren[] }
 
+// Using simple rate limiting (https://github.com/xavi-/node-simple-rate-limiter)
+// private rateLimitedFetch = rateLimit.promise(fetch).to(3).per(1000)
+const rateLimitedFetch = pThrottle({
+  // Notion API rate limit is 3 requests per second,
+  // we make it 2 to be on a safe side
+  limit: 2,
+  interval: 1000,
+  onDelay: () => {
+    console.log('Fetch reached interval limit, call is delayed')
+  },
+})(fetch)
+
 export abstract class GenericDatabaseClass<
   DatabaseResponse,
   DatabasePatchDTO extends { __data: Record<string, unknown> },
@@ -29,17 +41,6 @@ export abstract class GenericDatabaseClass<
   // DatabaseWebHookOptions,
 > {
   private notionApiHeaders: Record<string, string>
-  // Using simple rate limiting (https://github.com/xavi-/node-simple-rate-limiter)
-  // private rateLimitedFetch = rateLimit.promise(fetch).to(3).per(1000)
-  private rateLimitedFetch = pThrottle({
-    // Notion API rate limit is 3 requests per second,
-    // we make it 2 to be on a safe side
-    limit: 2,
-    interval: 1000,
-    onDelay: () => {
-      console.log('Fetch reached interval limit, call is delayed')
-    },
-  })(fetch)
 
   /** @private */
   protected abstract notionDatabaseId: string
@@ -92,7 +93,7 @@ export abstract class GenericDatabaseClass<
       sorts: this.queryRemapSorts(query['sorts']),
     }
     // console.log('Querying Notion database with:', JSON.stringify(notionQuery, null, 2))
-    const res: any = await this.rateLimitedFetch(
+    const res: any = await rateLimitedFetch(
       notionDatabaseQueryURL(this.notionDatabaseId, this.queryRemapFilterProperties(filterProps)),
       {
         method: 'POST',
@@ -122,7 +123,7 @@ export abstract class GenericDatabaseClass<
    * console.log(page.properties.title)
    */
   async getPage(id: string): Promise<DatabaseResponse> {
-    const res: any = await this.rateLimitedFetch(notionPageApiURL(id), {
+    const res: any = await rateLimitedFetch(notionPageApiURL(id), {
       method: 'GET',
       headers: this.notionApiHeaders,
     })
@@ -153,7 +154,7 @@ export abstract class GenericDatabaseClass<
    * await db.updatePage('70b2b25b7f434306b5089486de5efced', patch)
    */
   async updatePage(id: string, patch: DatabasePatchDTO): Promise<DatabaseResponse> {
-    const res: any = await this.rateLimitedFetch(notionPageApiURL(id), {
+    const res: any = await rateLimitedFetch(notionPageApiURL(id), {
       method: 'PATCH',
       headers: this.notionApiHeaders,
       body: JSON.stringify(patch.__data),
@@ -189,7 +190,7 @@ export abstract class GenericDatabaseClass<
     meta: DatabasePatchDTO | CreatePageBodyParameters,
     content?: BlockObjectRequest[],
   ): Promise<DatabaseResponse> {
-    const res: any = await this.rateLimitedFetch(notionPageApiURL(), {
+    const res: any = await rateLimitedFetch(notionPageApiURL(), {
       method: 'POST',
       headers: this.notionApiHeaders,
       body: JSON.stringify({
@@ -220,7 +221,7 @@ export abstract class GenericDatabaseClass<
    * await db.archivePage('70b2b25b7f434306b5089486de5efced')
    */
   async archivePage(id: string): Promise<DatabaseResponse> {
-    const res: any = await this.rateLimitedFetch(notionPageApiURL(id), {
+    const res: any = await rateLimitedFetch(notionPageApiURL(id), {
       method: 'PATCH',
       headers: this.notionApiHeaders,
       body: JSON.stringify({ archived: true }),
@@ -251,7 +252,7 @@ export abstract class GenericDatabaseClass<
     content: BlockObjectRequest[],
     opts?: AppendBlockChildrenParameters,
   ): Promise<ListBlockChildrenResponse> {
-    const res: any = await this.rateLimitedFetch(notionPageContentApiURL(id, opts), {
+    const res: any = await rateLimitedFetch(notionPageContentApiURL(id, opts), {
       method: 'PATCH',
       headers: this.notionApiHeaders,
       body: JSON.stringify({
@@ -289,7 +290,7 @@ export abstract class GenericDatabaseClass<
     let listHasMore = false
 
     do {
-      const res: any = await this.rateLimitedFetch(notionPageContentApiURL(id, opts), {
+      const res: any = await rateLimitedFetch(notionPageContentApiURL(id, opts), {
         method: 'GET',
         headers: this.notionApiHeaders,
       })

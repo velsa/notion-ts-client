@@ -22,20 +22,20 @@ export async function updateConfigFile(configFile: string, dbConfigData: ConfigF
   const resultConfig = { ignore: newConfig.ignore, databases: mergedDbConfigs }
 
   if (
-    numChanges === 0 &&
-    isEqual(
+    numChanges !== 0 ||
+    !isEqual(
       resultConfig.ignore?.map((i) => i.id),
       userConfig.ignore?.map((i) => i.id),
     )
   ) {
-    log('No changes detected. Not updating the config file.')
-  } else {
     fs.writeFileSync(configFile, JSON.stringify(resultConfig, null, 2))
     logSuccess('Updated config file.')
 
     if (numChanges !== 0) {
       log('Changes:', JSON.stringify(changes, null, 2))
     }
+  } else {
+    log('No changes detected. Not updating the config file.')
   }
 
   return resultConfig

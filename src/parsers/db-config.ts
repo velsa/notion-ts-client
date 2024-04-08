@@ -82,7 +82,10 @@ export function moveDefaultReadOnlyPropertiesToTheEnd(dbConfigs: ConfigFileDatab
 }
 
 export async function confirmNewDatabases(originalConfig: ConfigFile, newConfig: ConfigFile) {
-  const resultConfig: ConfigFile = { ignore: originalConfig.ignore, databases: {} }
+  const resultConfig: ConfigFile = {
+    ignore: JSON.parse(JSON.stringify(originalConfig.ignore)),
+    databases: {},
+  }
 
   for (const [dbId, newDbConfig] of Object.entries(newConfig.databases)) {
     if (originalConfig?.databases[dbId]) {
