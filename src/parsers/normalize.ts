@@ -17,13 +17,34 @@ export function normalizeProperty(property: string, caseType: 'camelCase' | 'keb
 }
 
 export function makeTypeName(varName: string) {
-  return capitalizeVarName(varName)
+  const typeName = capitalizeVarName(varName)
+
+  if (!typeName?.length) {
+    // throw new Error(`Could not normalize property: ${property}. Got empty string!`)
+    console.error(`Could make type name from property: ${varName}. Got empty string!`)
+  }
+
+  return typeName
 }
 
 export function makeConstVarName(varName: string) {
-  return changeCase.constantCase(varName)
+  const constVarName = changeCase.constantCase(varName)
+
+  if (!constVarName?.length) {
+    // throw new Error(`Could not normalize property: ${property}. Got empty string!`)
+    console.error(`Could make const var name from property: ${varName}. Got empty string!`)
+  }
+
+  return constVarName
 }
 
 export function capitalizeVarName(varName: string) {
-  return varName.charAt(0).toUpperCase() + varName.slice(1)
+  const capVarName = varName.charAt(0).toUpperCase() + varName.slice(1)
+
+  if (!capVarName?.length) {
+    // throw new Error(`Could not normalize property: ${property}. Got empty string!`)
+    console.error(`Could make capitalized var name from property: ${varName}. Got empty string!`)
+  }
+
+  return capVarName
 }

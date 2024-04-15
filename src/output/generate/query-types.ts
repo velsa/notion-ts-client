@@ -128,7 +128,7 @@ type ${typePrefix}PropertyFilter =
           return `type ${typePrefix}PropertyFilter = DatePropertyFilter`
 
         case 'files':
-          return `type ${typePrefix}PropertyFilter = ExistancePropertyFilter`
+          return `type ${typePrefix}PropertyFilter = ExistencePropertyFilter`
 
         case 'unique_id':
           return `type ${typePrefix}PropertyFilter = NumberPropertyFilter`
@@ -166,6 +166,7 @@ function getQueryImportType(type: string) {
     case 'select':
     case 'multi_select':
     case 'button':
+    case 'files':
       return
 
     case 'title':
