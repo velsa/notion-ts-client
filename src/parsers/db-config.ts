@@ -1,5 +1,5 @@
 import { confirm } from '@inquirer/prompts'
-import { log, logWarn } from '../cli/log'
+import { log, logError, logWarn } from '../cli/log'
 import {
   DatabaseObjectResponse,
   DatabasePropertyConfigResponse,
@@ -30,6 +30,16 @@ export function createConfigFromNotionDatabases(res: SearchResponse, config: Con
       return dbConfig
     }
 
+    const normalizedDbName = normalizeProperty(dbName)
+
+    if (!normalizedDbName?.length) {
+      logError(
+        `Could not normalize database name for database ${dbName} (id: ${id}).\nPlease edit the DB name in Notion to make sure it contains at least one english character.`,
+      )
+
+      throw new Error(`Could not normalize database name for database ${dbName} (id: ${id})`)
+    }
+
     try {
       dbConfig[id] = {
         _name: dbName,
@@ -40,7 +50,7 @@ export function createConfigFromNotionDatabases(res: SearchResponse, config: Con
 
       return dbConfig
     } catch (err) {
-      console.error(`Error parsing database ${dbName} with id: ${id}`, err)
+      logError(`Error parsing database ${dbName} with id: ${id}`, err)
 
       throw err
     }
@@ -53,6 +63,12 @@ function remapToConfigProperties(properties: Record<string, DatabasePropertyConf
   const remappedProperties = Object.values(properties).reduce((acc, property) => {
     const { id, name, type } = property
     const varName = normalizeProperty(name)
+
+    if (!varName?.length) {
+      logError(
+        `Property: ${name} (id: ${id}, type: ${type}) is normalized into an empty string!\nPlease edit the config file manually to fix the "varName" for this property. Or edit the property name in Notion and make sure it contains at least one english character, then run the command again.`,
+      )
+    }
 
     return {
       ...acc,

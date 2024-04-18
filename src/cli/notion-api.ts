@@ -15,7 +15,7 @@ export async function fetchNotionDatabases(secret: string): Promise<SearchRespon
       },
     })
   } catch (error) {
-    console.error(error)
+    logError('Notion search API failed', error)
 
     if ((error as { code?: number })?.code === 401) {
       logError('Make sure your Notion API secret is correct.')

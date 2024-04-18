@@ -1,3 +1,4 @@
+import { logWarn } from '../cli/log'
 import { DatabaseObjectResponse, SearchResponse } from '../output/core/types/notion-api.types'
 import { ConfigFileDatabasesConfig } from '../types'
 import { CustomTypesConfig, CustomTypesPropertiesConfig, CustomTypesPropertyConfig } from '../types/custom-types'
@@ -14,7 +15,7 @@ export function createCustomConfigFromNotionDatabases(
       const notionPropConfig = Object.values(notionDbConfig.properties).find((p) => p.id === propId)
 
       if (!notionPropConfig) {
-        console.warn(`Property ${prop._name} is missing in Notion database ${dbConfig._name}`)
+        logWarn(`Property ${prop._name} is missing in Notion database ${dbConfig._name}`)
 
         return propConfig
       }

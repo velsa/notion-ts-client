@@ -47,8 +47,7 @@ export function readUserConfig(configPath: string) {
   try {
     userConfig = fs.readFileSync(configPath, 'utf8')
   } catch (err) {
-    logError(`Failed reading ${chalk.yellow(configPath)}.`)
-    console.error(err)
+    logError(`Failed reading ${chalk.yellow(configPath)}.`, err)
     process.exit(1)
   }
 
@@ -57,8 +56,7 @@ export function readUserConfig(configPath: string) {
   try {
     userConfigData = JSON.parse(userConfig)
   } catch (err) {
-    logError(`Error parsing ${chalk.yellow(configPath)}.`)
-    console.error(err)
+    logError(`Error parsing ${chalk.yellow(configPath)}.`, err)
     process.exit(1)
   }
 
