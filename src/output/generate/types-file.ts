@@ -138,22 +138,34 @@ function getTypesFileProperties(
 }
 
 function getPropertyType(type: string, propConfig?: CustomTypesPropertyConfig) {
-  const typesUnion = (propConfig?: CustomTypesPropertyConfig) =>
+  const makeTypesUnion = (propConfig?: CustomTypesPropertyConfig) =>
     propConfig?.options
-      .map(({ name, color }) => `{ id: StringRequest, name: '${name}', color: '${color}' }`)
-      .join(' | ')
+      ?.map(({ name, color }) => `{ id: StringRequest, name: '${name}', color: '${color}' }`)
+      ?.join(' | ')
+  const typesUnion = makeTypesUnion(propConfig)
 
   switch (type) {
     case 'select':
-      return "Omit<SelectPropertyItemObjectResponse, 'select'> & { select: " + typesUnion(propConfig) + '}'
+      if (!typesUnion?.length) {
+        return 'SelectPropertyItemObjectResponse'
+      } else {
+        return "Omit<SelectPropertyItemObjectResponse, 'select'> & { select: " + typesUnion + '}'
+      }
+
     case 'multi_select':
-      return (
-        "Omit<MultiSelectPropertyItemObjectResponse, 'multi_select'> & { multi_select: [" +
-        typesUnion(propConfig) +
-        ']}'
-      )
+      if (!typesUnion?.length) {
+        return 'MultiSelectPropertyItemObjectResponse'
+      } else {
+        return "Omit<MultiSelectPropertyItemObjectResponse, 'multi_select'> & { multi_select: [" + typesUnion + ']}'
+      }
+
     case 'status':
-      return "Omit<StatusPropertyItemObjectResponse, 'status'> & { status: " + typesUnion(propConfig) + '}'
+      if (!typesUnion?.length) {
+        return 'StatusPropertyItemObjectResponse'
+      } else {
+        return "Omit<StatusPropertyItemObjectResponse, 'status'> & { status: " + typesUnion + '}'
+      }
+
     default:
       return getImportType(type)
   }
