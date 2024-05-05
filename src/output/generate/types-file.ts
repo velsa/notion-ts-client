@@ -140,7 +140,7 @@ function getTypesFileProperties(
 function getPropertyType(type: string, propConfig?: CustomTypesPropertyConfig) {
   const makeTypesUnion = (propConfig?: CustomTypesPropertyConfig) =>
     propConfig?.options
-      ?.map(({ name, color }) => `{ id: StringRequest, name: '${name}', color: '${color}' }`)
+      ?.map(({ name, color }) => `{ id: StringRequest, name: '${name.replace(/'/g, "\\'")}', color: '${color}' }`)
       ?.join(' | ')
   const typesUnion = makeTypesUnion(propConfig)
 

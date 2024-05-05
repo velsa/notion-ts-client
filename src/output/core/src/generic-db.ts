@@ -7,7 +7,7 @@ import {
   ListBlockChildrenQueryParameters,
   ListBlockChildrenResponse,
 } from '../types/notion-api.types'
-import { notionDatabaseQueryURL, notionPageApiURL, notionPageContentApiURL } from './notion-urls'
+import { normId, notionDatabaseQueryURL, notionPageApiURL, notionPageContentApiURL } from './notion-urls'
 import pThrottle from './p-throttle'
 
 export type DatabaseOptions = {
@@ -103,8 +103,10 @@ export abstract class GenericDatabaseClass<
     )
 
     if (!res.ok) {
-      console.error(await res.json())
-      throw new Error(`Failed to query database (${this.notionDatabaseId}): ${res.status} ${res.statusText}`)
+      console.error('Query:', query, '\nResponse:', await res.json())
+      throw new Error(
+        `query: failed to query database ${normId(this.notionDatabaseId)}\n${res.status} ${res.statusText}`,
+      )
     }
 
     return await res.json()
@@ -131,7 +133,7 @@ export abstract class GenericDatabaseClass<
     if (!res.ok) {
       console.error(await res.json())
       throw new Error(
-        `Failed to get page (${id}) properties (database id: ${this.notionDatabaseId}): ${res.status} ${res.statusText}`,
+        `getPage: failed to get metadata. Page id: ${normId(id)}, Database id: ${normId(this.notionDatabaseId)}.\n${res.status} ${res.statusText}`,
       )
     }
 
@@ -163,7 +165,7 @@ export abstract class GenericDatabaseClass<
     if (!res.ok) {
       console.error(await res.json())
       throw new Error(
-        `Failed to update page (${id}) properties (database id: ${this.notionDatabaseId}): ${res.status} ${res.statusText}`,
+        `updatePage: failed to update metadata. Page id: ${normId(id)}, Database id: ${normId(this.notionDatabaseId)}.\n ${res.status} ${res.statusText}`,
       )
     }
 
@@ -202,7 +204,9 @@ export abstract class GenericDatabaseClass<
 
     if (!res.ok) {
       console.error(await res.json())
-      throw new Error(`Failed to create page in database (${this.notionDatabaseId}): ${res.status} ${res.statusText}`)
+      throw new Error(
+        `createPage: failed for database ${normId(this.notionDatabaseId)}\n${res.status} ${res.statusText}`,
+      )
     }
 
     return await res.json()
@@ -230,7 +234,7 @@ export abstract class GenericDatabaseClass<
     if (!res.ok) {
       console.error(await res.json())
       throw new Error(
-        `Failed to archive page ${id} (database id: ${this.notionDatabaseId}): ${res.status} ${res.statusText}`,
+        `archivePage: failed. Page id: ${normId(id)}, Database id: ${normId(this.notionDatabaseId)}.\n${res.status} ${res.statusText}`,
       )
     }
 
@@ -263,7 +267,7 @@ export abstract class GenericDatabaseClass<
     if (!res.ok) {
       console.error(await res.json())
       throw new Error(
-        `appendBlockChildren failed for database (${this.notionDatabaseId}): ${res.status} ${res.statusText}`,
+        `appendBlockChildren: failed for database ${normId(this.notionDatabaseId)}.\n${res.status} ${res.statusText}`,
       )
     }
 
@@ -298,7 +302,7 @@ export abstract class GenericDatabaseClass<
       if (!res.ok) {
         console.error(await res.json())
         throw new Error(
-          `Failed to get page content (${id}) (database id: ${this.notionDatabaseId}): ${res.status} ${res.statusText}`,
+          `getPageBlocks: failed to get page content. Page Id: ${normId(id)}, Database id: ${normId(this.notionDatabaseId)}.\n${res.status} ${res.statusText}`,
         )
       }
 

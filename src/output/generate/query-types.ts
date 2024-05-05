@@ -57,6 +57,8 @@ export type ${dbTypeName}Query = Omit<QueryDatabaseBodyParameters, 'filter' | 's
     | TimestampLastEditedTimeFilter
 }
 
+export type ${dbTypeName}QueryFilter = ${dbTypeName}Query['filter']
+
 export type ${dbTypeName}QueryResponse = {
   results: ${dbTypeName}Response[]
   next_cursor: string | null
@@ -186,6 +188,9 @@ function getQueryImportType(type: string) {
 
     case 'unique_id':
       return `NumberPropertyFilter`
+
+    case 'status':
+      return
 
     default:
       return `${capitalizeVarName(type)}PropertyFilter`
