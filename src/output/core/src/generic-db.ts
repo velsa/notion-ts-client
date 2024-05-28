@@ -6,6 +6,7 @@ import {
   CreatePageBodyParameters,
   ListBlockChildrenQueryParameters,
   ListBlockChildrenResponse,
+  UpdatePageBodyParameters,
 } from '../types/notion-api.types'
 import { normId, notionDatabaseQueryURL, notionPageApiURL, notionPageContentApiURL } from './notion-urls'
 import pThrottle from './p-throttle'
@@ -133,7 +134,9 @@ export abstract class GenericDatabaseClass<
     if (!res.ok) {
       console.error(await res.json())
       throw new Error(
-        `getPage: failed to get metadata. Page id: ${normId(id)}, Database id: ${normId(this.notionDatabaseId)}.\n${res.status} ${res.statusText}`,
+        `getPage: failed to get metadata. Page id: ${normId(id)}, Database id: ${normId(
+          this.notionDatabaseId,
+        )}.\n${res.status} ${res.statusText}`,
       )
     }
 
@@ -155,17 +158,19 @@ export abstract class GenericDatabaseClass<
    *
    * await db.updatePage('70b2b25b7f434306b5089486de5efced', patch)
    */
-  async updatePage(id: string, patch: DatabasePatchDTO): Promise<DatabaseResponse> {
+  async updatePage(id: string, patch: DatabasePatchDTO | UpdatePageBodyParameters): Promise<DatabaseResponse> {
     const res: any = await rateLimitedFetch(notionPageApiURL(id), {
       method: 'PATCH',
       headers: this.notionApiHeaders,
-      body: JSON.stringify(patch.__data),
+      body: JSON.stringify('__data' in patch ? patch.__data : patch),
     })
 
     if (!res.ok) {
       console.error(await res.json())
       throw new Error(
-        `updatePage: failed to update metadata. Page id: ${normId(id)}, Database id: ${normId(this.notionDatabaseId)}.\n ${res.status} ${res.statusText}`,
+        `updatePage: failed to update metadata. Page id: ${normId(id)}, Database id: ${normId(
+          this.notionDatabaseId,
+        )}.\n ${res.status} ${res.statusText}`,
       )
     }
 
@@ -242,7 +247,7 @@ export abstract class GenericDatabaseClass<
   }
 
   /**
-   * Create a page in the Notion database
+   * Append content to a page in the Notion database
    *
    * @param id - Page or block id
    * @param content - Page content – Notion blocks. See Notion API documentation for the block format.
@@ -302,7 +307,9 @@ export abstract class GenericDatabaseClass<
       if (!res.ok) {
         console.error(await res.json())
         throw new Error(
-          `getPageBlocks: failed to get page content. Page Id: ${normId(id)}, Database id: ${normId(this.notionDatabaseId)}.\n${res.status} ${res.statusText}`,
+          `getPageBlocks: failed to get page content. Page Id: ${normId(id)}, Database id: ${normId(
+            this.notionDatabaseId,
+          )}.\n${res.status} ${res.statusText}`,
         )
       }
 

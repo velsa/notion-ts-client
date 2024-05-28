@@ -68,8 +68,8 @@ export class ${dbTypeName}ResponseDTO {
 }
   
 export class ${dbTypeName}PropertiesResponseDTO {
-  private __props: ${dbTypeName}Response['properties']
-  private __data
+  __props: ${dbTypeName}Response['properties']
+  __data
 
   constructor(props: ${dbTypeName}Response['properties']) {
     this.__props = props
