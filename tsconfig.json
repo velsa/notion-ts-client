@@ -105,7 +105,8 @@
     ],
   },
   "include": [
-    "**/*.ts"
+    "**/*.ts",
+    ".eslintrc.cjs",
   ],
   "exclude": [
     "node_modules",

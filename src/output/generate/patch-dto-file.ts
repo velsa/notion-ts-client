@@ -17,6 +17,8 @@ export function createPatchDTOFile(opts: {
 
 export type ${opts.dbTypeName}PropertiesPatch = {
 ${type}}
+type TypeFromRecord<Obj, Type> = Obj extends Record<string, infer T> ? Extract<T, Type> : never
+
   
 export class ${opts.dbTypeName}PatchDTO {
   __data: UpdatePageBodyParameters
@@ -29,7 +31,8 @@ export class ${opts.dbTypeName}PatchDTO {
   }) {
     const { properties: props, coverUrl, icon, archived } = opts
 
-    this.__data = { properties: {} }
+    this.__data = {}
+    this.__data.properties = {}
     this.__data.cover = coverUrl ? { type: 'external', external: { url: coverUrl } } : undefined
     this.__data.icon = icon
     this.__data.archived = archived
@@ -81,7 +84,7 @@ function getDTOFileType(dbTypeName: string, dbPropsConfig: ConfigFilePropertiesC
     } else if (['rich_text', 'title'].includes(propConfig._type)) {
       typeValue = `string | { text: string; url?: string; annotations?: RichTextItemRequest['annotations'] } | RichTextItemRequest[]`
     } else {
-      typeValue = `Extract<UpdatePageBodyParameters['properties'][number], {type: '${propConfig._type}'}>['${propConfig._type}']`
+      typeValue = `TypeFromRecord<UpdatePageBodyParameters['properties'], { type: '${propConfig._type}' }>['${propConfig._type}']`
     }
 
     acc += `${TYPE_INDENT}${propConfig.varName}?: ${typeValue}\n`

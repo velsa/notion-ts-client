@@ -8,8 +8,14 @@ export class AbortError extends Error {
   }
 }
 
-export default function pThrottle(opts: { limit: number; interval: number; strict?: boolean; onDelay?: () => void }) {
-  const { limit, interval, strict, onDelay } = opts
+export default function pThrottle(opts: {
+  limit: number
+  interval: number
+  strict?: boolean
+  logName?: string
+  onDelay?: (name: string | undefined) => void
+}) {
+  const { limit, interval, strict, logName, onDelay } = opts
 
   if (!Number.isFinite(limit)) {
     throw new TypeError('Expected `limit` to be a finite number')
@@ -74,7 +80,7 @@ export default function pThrottle(opts: { limit: number; interval: number; stric
   const getDelay = strict ? strictDelay : windowedDelay
 
   return (function_: { apply: (arg0: unknown, arg1: unknown[]) => unknown }) => {
-    const throttled = (...arguments_: unknown[]) => {
+    const throttled = async (...arguments_: unknown[]) => {
       if (!throttled.isEnabled) {
         return (async () => await function_.apply(null, arguments_))()
       }
@@ -91,7 +97,7 @@ export default function pThrottle(opts: { limit: number; interval: number; stric
         if (delay > 0) {
           timeoutId = setTimeout(execute, delay)
           queue.set(timeoutId, reject)
-          onDelay?.()
+          onDelay?.(logName)
         } else {
           execute()
         }
