@@ -28,7 +28,7 @@ const rateLimitedFetch = (logName: string) =>
     interval: 1000,
     logName,
     onDelay: () => {
-      console.log('Fetch reached interval limit, call is delayed')
+      console.log(`${logName}: Fetch reached interval limit, call is delayed`)
     },
   })(fetch)
 

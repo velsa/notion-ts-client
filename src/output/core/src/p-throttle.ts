@@ -1,3 +1,4 @@
+/* eslint-disable require-await */
 /* eslint-disable prefer-spread */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // https://github.com/sindresorhus/p-throttle

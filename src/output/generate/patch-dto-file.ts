@@ -15,9 +15,10 @@ export function createPatchDTOFile(opts: {
   const code = getDTOFileCode(opts.propsConfig)
   const content = `${imports}
 
+type TypeFromRecord<Obj, Type> = Obj extends Record<string, infer T> ? Extract<T, Type> : never
+
 export type ${opts.dbTypeName}PropertiesPatch = {
 ${type}}
-type TypeFromRecord<Obj, Type> = Obj extends Record<string, infer T> ? Extract<T, Type> : never
 
   
 export class ${opts.dbTypeName}PatchDTO {
