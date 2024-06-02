@@ -8,7 +8,13 @@ import {
   ListBlockChildrenResponse,
   UpdatePageBodyParameters,
 } from '../types/notion-api.types'
-import { normId, notionDatabaseQueryURL, notionPageApiURL, notionPageContentApiURL } from './notion-urls'
+import {
+  normId,
+  notionBlockApiURL,
+  notionDatabaseQueryURL,
+  notionPageApiURL,
+  notionPageContentApiURL,
+} from './notion-urls'
 import pThrottle from './p-throttle'
 
 export type DatabaseOptions = {
@@ -119,7 +125,8 @@ export abstract class GenericDatabaseClass<
    * Get a page from the Notion database
    *
    * @param id - Notion page id
-   * @returns - Notion page data with properties. Use your custom DTO type to parse the data.
+   * @returns - Notion page data with page meta and properties.
+   * Use your custom DTO type to parse the data.
    *
    * @example
    * const pageResponse = await db.getPage('70b2b25b7f434306b5089486de5efced')
@@ -149,7 +156,8 @@ export abstract class GenericDatabaseClass<
    * Update a page in the Notion database
    *
    * @param id - Notion page id
-   * @param patch - Patch data. Use your custom DTO type to create the patch data.
+   * @param patch - Patch data for page cover, icon and properties.
+   * Use your custom DTO type to create the patch data.
    *
    * @example
    * const patch = new MyDatabasePatchDTO({
@@ -250,7 +258,7 @@ export abstract class GenericDatabaseClass<
   }
 
   /**
-   * Append content to a page in the Notion database
+   * Append content to a page or block in the Notion database
    *
    * @param id - Page or block id
    * @param content - Page content – Notion blocks. See Notion API documentation for the block format.
@@ -280,6 +288,80 @@ export abstract class GenericDatabaseClass<
     }
 
     return await res.json()
+  }
+
+  /**
+   * Update content to a page or block in the Notion database
+   * Recursively updates blocks content is different from existing content.
+   *
+   * @param id - Page or block id
+   * @param content - Page content – Notion blocks. See Notion API documentation for the block format.
+   * This functions supports children property in the block object to update nested blocks.
+   *
+   * @example
+   *
+   * await db.appendBlockChildren(pageId, content)
+   */
+  async updateBlockChildren(
+    id: string,
+    content: (BlockObjectRequest & { children?: BlockObjectRequest[] })[],
+  ): Promise<Array<BlockObjectResponseWithChildren>> {
+    const blocks = await this.getPageBlocks(id)
+
+    for (let i = 0; i < blocks.length; i++) {
+      const block = blocks[i] as BlockObjectResponseWithChildren
+      const updateBlock = content[i] as BlockObjectRequest
+      const blockContent = block[block.type as keyof BlockObjectResponseWithChildren] as unknown
+      const { children: updateBlockChildren, ...updateBlockContent } = updateBlock[
+        updateBlock.type as keyof BlockObjectRequest
+      ] as { children?: BlockObjectRequest[] }
+
+      if (!updateBlock || !updateBlockContent) {
+        await this.archiveBlock(block.id)
+        continue
+      }
+
+      if (block.type !== updateBlock.type) {
+        await this.appendBlockChildren(id, [updateBlock], { after: block.id } as AppendBlockChildrenParameters)
+        await this.archiveBlock(block.id)
+        continue
+      }
+
+      if (JSON.stringify(blockContent) !== JSON.stringify(updateBlockContent)) {
+        delete (updateBlockContent as BlockObjectRequest)['type']
+
+        const res: any = await rateLimitedFetch(`updateBlock(${id})`)(notionBlockApiURL(block.id), {
+          method: 'PATCH',
+          headers: this.notionApiHeaders,
+          body: JSON.stringify({ [updateBlock.type]: updateBlockContent }),
+        })
+
+        if (!res.ok) {
+          console.error(await res.json())
+          throw new Error(
+            `updateBlockChildren: failed for database ${normId(this.notionDatabaseId)}.\n${res.status} ${
+              res.statusText
+            }`,
+          )
+        }
+      }
+
+      if (block.has_children) {
+        if (!updateBlockChildren || updateBlockChildren.length === 0) {
+          const children = await this.getPageBlocks(block.id)
+          const archiveChildren = children.map(async (child) => {
+            await this.archiveBlock(child.id)
+          })
+
+          await Promise.all(archiveChildren)
+          continue
+        }
+
+        await this.updateBlockChildren(block.id, updateBlockChildren)
+      }
+    }
+
+    return await this.getPageBlocks(id)
   }
 
   /**
@@ -331,6 +413,32 @@ export abstract class GenericDatabaseClass<
     } while (listHasMore)
 
     return blocks
+  }
+
+  /**
+   * Archive a block in the Notion page or inside another block.
+   * Archived blocks are not deleted, but are moved to Trash.
+   *
+   * @param id - Notion block id
+   *
+   * @example
+   *
+   * await db.archiveBlock('70b2b25b7f434306b5089486de5efced', { recursive: true })
+   */
+  async archiveBlock(id: string): Promise<BlockObjectResponseWithChildren> {
+    const res: any = await rateLimitedFetch(`archiveBlock(${id})`)(notionPageContentApiURL(id), {
+      method: 'DELETE',
+      headers: this.notionApiHeaders,
+    })
+
+    if (!res.ok) {
+      console.error(await res.json())
+      throw new Error(
+        `archiveBlock: failed. Block id: ${normId(id)}, Database id: ${normId(this.notionDatabaseId)}.\n${res.status} ${res.statusText}`,
+      )
+    }
+
+    return await res.json()
   }
 
   // TODO: This is NoteMate Logic. Move it there!
