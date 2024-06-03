@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   AppendBlockChildrenParameters,
   BlockObjectRequest,
@@ -26,15 +25,17 @@ export type BlockObjectResponseWithChildren = BlockObjectResponse & { children?:
 
 // Using simple rate limiting (https://github.com/xavi-/node-simple-rate-limiter)
 // private rateLimitedFetch = rateLimit.promise(fetch).to(3).per(1000)
+// const rateLimitedFetch =
 const rateLimitedFetch = (logName: string) =>
   pThrottle({
+    // Environment name for the throttle, all async calls with the same env name will be throttled together
+    env: 'notion-ts-client--fetch',
     // Notion API rate limit is 3 requests per second,
     // we make it 2 to be on a safe side
     limit: 2,
     interval: 1000,
-    logName,
-    onDelay: () => {
-      console.log(`${logName}: Fetch reached interval limit, call is delayed`)
+    onDelay: ({ delay }) => {
+      console.log(`${logName}: fetch reached rate limit, delayed by ${delay}ms,`)
     },
   })(fetch)
 
@@ -102,7 +103,7 @@ export abstract class GenericDatabaseClass<
       sorts: this.queryRemapSorts(query['sorts']),
     }
     // console.log('Querying Notion database with:', JSON.stringify(notionQuery, null, 2))
-    const res: any = await rateLimitedFetch('query')(
+    const res = await rateLimitedFetch('query')(
       notionDatabaseQueryURL(this.notionDatabaseId, this.queryRemapFilterProperties(filterProps)),
       {
         method: 'POST',
@@ -118,7 +119,7 @@ export abstract class GenericDatabaseClass<
       )
     }
 
-    return await res.json()
+    return (await res.json()) as DatabaseQueryResponse
   }
 
   /**
@@ -135,7 +136,7 @@ export abstract class GenericDatabaseClass<
    * console.log(page.properties.title)
    */
   async getPage(id: string): Promise<DatabaseResponse> {
-    const res: any = await rateLimitedFetch(`getPage(${id})`)(notionPageApiURL(id), {
+    const res = await rateLimitedFetch(`getPage(${id})`)(notionPageApiURL(id), {
       method: 'GET',
       headers: this.notionApiHeaders,
     })
@@ -149,7 +150,7 @@ export abstract class GenericDatabaseClass<
       )
     }
 
-    return await res.json()
+    return (await res.json()) as DatabaseResponse
   }
 
   /**
@@ -169,7 +170,7 @@ export abstract class GenericDatabaseClass<
    * await db.updatePage('70b2b25b7f434306b5089486de5efced', patch)
    */
   async updatePage(id: string, patch: DatabasePatchDTO | UpdatePageBodyParameters): Promise<DatabaseResponse> {
-    const res: any = await rateLimitedFetch(`updatePage(${id})`)(notionPageApiURL(id), {
+    const res = await rateLimitedFetch(`updatePage(${id})`)(notionPageApiURL(id), {
       method: 'PATCH',
       headers: this.notionApiHeaders,
       body: JSON.stringify('__data' in patch ? patch.__data : patch),
@@ -184,7 +185,7 @@ export abstract class GenericDatabaseClass<
       )
     }
 
-    return await res.json()
+    return (await res.json()) as DatabaseResponse
   }
 
   /**
@@ -208,7 +209,7 @@ export abstract class GenericDatabaseClass<
     content?: BlockObjectRequest[],
   ): Promise<DatabaseResponse> {
     const data = '__data' in meta ? meta.__data : meta
-    const res: any = await rateLimitedFetch(`createPage`)(notionPageApiURL(), {
+    const res = await rateLimitedFetch(`createPage`)(notionPageApiURL(), {
       method: 'POST',
       headers: this.notionApiHeaders,
       body: JSON.stringify({
@@ -225,7 +226,7 @@ export abstract class GenericDatabaseClass<
       )
     }
 
-    return await res.json()
+    return (await res.json()) as DatabaseResponse
   }
 
   /**
@@ -241,7 +242,7 @@ export abstract class GenericDatabaseClass<
    * await db.archivePage('70b2b25b7f434306b5089486de5efced')
    */
   async archivePage(id: string): Promise<DatabaseResponse> {
-    const res: any = await rateLimitedFetch(`archivePage(${id})`)(notionPageApiURL(id), {
+    const res = await rateLimitedFetch(`archivePage(${id})`)(notionPageApiURL(id), {
       method: 'PATCH',
       headers: this.notionApiHeaders,
       body: JSON.stringify({ archived: true }),
@@ -254,7 +255,7 @@ export abstract class GenericDatabaseClass<
       )
     }
 
-    return await res.json()
+    return (await res.json()) as DatabaseResponse
   }
 
   /**
@@ -272,7 +273,7 @@ export abstract class GenericDatabaseClass<
     content: BlockObjectRequest[],
     opts?: AppendBlockChildrenParameters,
   ): Promise<ListBlockChildrenResponse> {
-    const res: any = await rateLimitedFetch(`appendBlockChildren(${id})`)(notionPageContentApiURL(id, opts), {
+    const res = await rateLimitedFetch(`appendBlockChildren(${id})`)(notionPageContentApiURL(id, opts), {
       method: 'PATCH',
       headers: this.notionApiHeaders,
       body: JSON.stringify({
@@ -287,7 +288,7 @@ export abstract class GenericDatabaseClass<
       )
     }
 
-    return await res.json()
+    return (await res.json()) as ListBlockChildrenResponse
   }
 
   /**
@@ -330,7 +331,7 @@ export abstract class GenericDatabaseClass<
       if (JSON.stringify(blockContent) !== JSON.stringify(updateBlockContent)) {
         delete (updateBlockContent as BlockObjectRequest)['type']
 
-        const res: any = await rateLimitedFetch(`updateBlock(${id})`)(notionBlockApiURL(block.id), {
+        const res = await rateLimitedFetch(`updateBlock(${id})`)(notionBlockApiURL(block.id), {
           method: 'PATCH',
           headers: this.notionApiHeaders,
           body: JSON.stringify({ [updateBlock.type]: updateBlockContent }),
@@ -384,7 +385,7 @@ export abstract class GenericDatabaseClass<
     let listHasMore = false
 
     do {
-      const res: any = await rateLimitedFetch(`getPageBlocks(${id})`)(notionPageContentApiURL(id, opts), {
+      const res = await rateLimitedFetch(`getPageBlocks(${id})`)(notionPageContentApiURL(id, opts), {
         method: 'GET',
         headers: this.notionApiHeaders,
       })
@@ -426,7 +427,7 @@ export abstract class GenericDatabaseClass<
    * await db.archiveBlock('70b2b25b7f434306b5089486de5efced', { recursive: true })
    */
   async archiveBlock(id: string): Promise<BlockObjectResponseWithChildren> {
-    const res: any = await rateLimitedFetch(`archiveBlock(${id})`)(notionPageContentApiURL(id), {
+    const res = await rateLimitedFetch(`archiveBlock(${id})`)(notionPageContentApiURL(id), {
       method: 'DELETE',
       headers: this.notionApiHeaders,
     })
@@ -438,7 +439,7 @@ export abstract class GenericDatabaseClass<
       )
     }
 
-    return await res.json()
+    return (await res.json()) as BlockObjectResponseWithChildren
   }
 
   // TODO: This is NoteMate Logic. Move it there!
