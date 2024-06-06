@@ -1,4 +1,5 @@
-import { createClient } from 'redis'
+import { REDIS_LOCK_DEFAULT_RETRY_DELAY, REDIS_LOCK_DEFAULT_TIMEOUT, redisLock } from './redis-lock'
+
 export interface ThrottleConfig {
   // The name of the environment, all throttled functions with the same `env` name share the same rate limit
   env: string
@@ -6,10 +7,12 @@ export interface ThrottleConfig {
   limit: number
   // The length of the interval (window) in milliseconds
   interval: number
+  // The Redis client instance to use for environment state storage
+  redis?: RedisClient
   // The Redis URL to use for environment state storage
-  redisUrl?: string
+  // redisUrl?: string
   // The Redis database number to use for environment state storage
-  redisDb?: number
+  // redisDb?: number
   // A callback that is called when a call is delayed
   onDelay?: (info: { delay: number; args: unknown[] }) => void
 }
@@ -25,30 +28,30 @@ export default function pThrottle(config: ThrottleConfig) {
 
   validateConfig(config)
 
-  function windowedDelay() {
+  async function windowedDelay() {
     const env = runEnvs[config.env] as RunEnvironment
+    const unlock = (await env.getLock(`windowedDelay`)) as () => Promise<void>
     const now = Date.now()
-    let currentTick = parseInt(env.getValue('currentTick') ?? '0')
-    const activeCount = parseInt(env.getValue('activeCount') ?? '0')
-
-    // console.log('currentTick', currentTick, 'activeCount', activeCount, 'now', now)
+    let currentTick = await env.getNumValue('currentTick')
+    const activeCount = await env.getNumValue('activeCount')
 
     if (now - currentTick > interval) {
-      env.setValue('currentTick', now)
-      env.setValue('activeCount', 1)
+      await env.setValue('currentTick', now)
+      await env.setValue('activeCount', 1)
+      await unlock()
 
       return 0
     }
 
     if (activeCount < limit) {
-      env.setValue('activeCount', activeCount + 1)
+      await env.setValue('activeCount', activeCount + 1)
     } else {
       currentTick += interval
-      env.setValue('currentTick', currentTick)
-      env.setValue('activeCount', 1)
+      await env.setValue('currentTick', currentTick)
+      await env.setValue('activeCount', 1)
     }
 
-    // console.log('delay', currentTick - now)
+    await unlock()
 
     return currentTick - now
   }
@@ -61,14 +64,17 @@ export default function pThrottle(config: ThrottleConfig) {
           // eslint-disable-next-line prefer-spread
           function_.apply(null, arguments_).then(resolve, reject)
         }
-        const delay = windowedDelay()
 
-        if (delay > 0) {
-          setTimeout(execute, delay)
-          onDelay?.({ delay, args: arguments_ })
-        } else {
-          execute()
-        }
+        windowedDelay()
+          .then((delay) => {
+            if (delay > 0) {
+              setTimeout(execute, delay)
+              onDelay?.({ delay, args: arguments_ })
+            } else {
+              execute()
+            }
+          })
+          .catch(reject)
       })
     }
 
@@ -90,49 +96,82 @@ function validateConfig(config: ThrottleConfig) {
   }
 }
 
+type RedisClient = {
+  set: (key: string, value: string | number, options?: { PX: number; NX: true }) => Promise<string | null>
+  get: (key: string) => Promise<string | null>
+  del: (key: string) => Promise<number>
+}
+
 type RunEnvironmentProps = 'currentTick' | 'activeCount'
 
 class RunEnvironment {
   config: ThrottleConfig
-  values: Map<string, string>
+  values: Map<string, string> = new Map()
   keyPrefix: string
-  redis: ReturnType<typeof createClient> | null = null
+  fallbackLock: boolean = false
+
+  // eslint-disable-next-line require-await
+  lock: ReturnType<typeof redisLock> = async (_name: string, timeout = REDIS_LOCK_DEFAULT_TIMEOUT) => {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        reject(new Error('Lock timeout'))
+      }, timeout)
+
+      const retry = () => {
+        if (this.fallbackLock) {
+          setTimeout(retry, REDIS_LOCK_DEFAULT_RETRY_DELAY)
+        } else {
+          this.fallbackLock = true
+          resolve(() => {
+            this.fallbackLock = false
+          })
+        }
+      }
+
+      retry()
+    })
+  }
 
   constructor(config: ThrottleConfig) {
     this.config = config
     this.keyPrefix = `throttle-run-env:${config.env}:`
-    this.values = new Map()
-    this.setValue('currentTick', 0)
-    this.setValue('activeCount', 0)
-  }
 
-  async connect() {
-    if (!this.config?.redisUrl) {
-      throw new Error('ThrottleRunEnvironment: Redis URL is not provided')
+    if (this.config?.redis) {
+      this.lock = redisLock(this.config.redis)
     }
-
-    this.redis = await createClient({
-      url: this.config.redisUrl,
-      pingInterval: 1000,
-      database: this.config.redisDb,
-    })
-      .on('error', (err) => console.error('ThrottleRunEnvironment: Redis Client Error:', err))
-      .connect()
   }
 
-  getValue(key: RunEnvironmentProps) {
-    if (this.redis) {
-      // this.redis.get(this.keyPrefix + key).then((value) => value?.toString())
+  async getStringValue(key: RunEnvironmentProps): Promise<string | null> {
+    if (this.config.redis) {
+      return await this.config.redis.get(this.keyPrefix + key)
     } else {
-      return this.values.get(key)?.toString()
+      const value = this.values.get(key)?.toString()
+
+      return value ?? null
     }
   }
 
-  setValue(key: RunEnvironmentProps, value: string | number) {
-    if (this.redis) {
-      // await this.redis.set(this.keyPrefix + key, value.toString())
+  async getNumValue(key: RunEnvironmentProps): Promise<number> {
+    let value: string | undefined | null
+
+    if (this.config.redis) {
+      value = await this.config.redis.get(this.keyPrefix + key)
+    } else {
+      value = this.values.get(key)
+    }
+
+    return parseInt(value ?? '0')
+  }
+
+  async setValue(key: RunEnvironmentProps, value: string | number) {
+    if (this.config.redis) {
+      await this.config.redis.set(this.keyPrefix + key, value.toString())
     } else {
       this.values.set(key, value.toString())
     }
+  }
+
+  async getLock(name: string) {
+    return await this.lock(`throttle-run-env:${this.config.env}:${name}`)
   }
 }

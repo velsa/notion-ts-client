@@ -1,4 +1,5 @@
-import pThrottle, { ThrottleConfig } from '../output/core/src/p-throttle'
+import { createClient } from 'redis'
+import pThrottle from '../output/core/src/p-throttle'
 
 const asyncWork = async (name: string, duration: number = 0): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -11,54 +12,62 @@ const asyncWork = async (name: string, duration: number = 0): Promise<string> =>
 }
 
 describe('p-throttle', () => {
-  const throttleConfig: ThrottleConfig = {
-    env: 'test',
-    limit: 1,
-    interval: 1000,
-  }
-
-  beforeAll(() => {})
-
-  it('should work', async () => {
-    // const throttledAsyncWork = pThrottle({
-    const throttledAsyncWork = (logName: string) =>
-      pThrottle({
-        ...throttleConfig,
+  it('should work WITHOUT redis', async () => {
+    const throttledAsyncWork = (logName: string) => {
+      return pThrottle({
+        env: 'test',
+        limit: 1,
+        interval: 1000,
         onDelay: ({ delay, args }) => {
           console.log(`${logName}: reached rate limit, delayed for ${delay}ms,`, args)
         },
       })(asyncWork)
+    }
     const start = Date.now()
+    const throttledAsyncWorkWithLogs = throttledAsyncWork('test')
     const results = await Promise.all([
-      throttledAsyncWork('foo')('foo', 300),
-      throttledAsyncWork('bar')('bar', 400),
-      throttledAsyncWork('baz')('baz', 1300),
-      throttledAsyncWork('qux')('qux', 0),
+      throttledAsyncWorkWithLogs('foo', 300),
+      throttledAsyncWorkWithLogs('bar', 400),
+      throttledAsyncWorkWithLogs('baz', 1300),
+      throttledAsyncWorkWithLogs('qux', 0),
     ])
 
     expect(results).toEqual(['foo', 'bar', 'baz', 'qux'])
     expect(Date.now() - start).toBeGreaterThanOrEqual(2000)
   })
 
-  it('should work with `strict` option', async () => {
-    const throttledAsyncWork = (logName: string) =>
-      pThrottle({
-        ...throttleConfig,
+  it('should work WITH redis', async () => {
+    const redis = await createClient({
+      url: 'redis://localhost:6379',
+      pingInterval: 1000,
+      database: 3,
+    })
+      .on('error', (err) => console.error('Redis Client Error:', err))
+      .connect()
+    const throttledAsyncWork = (logName: string) => {
+      return pThrottle({
+        env: 'redis-test',
+        limit: 2,
+        interval: 1000,
+        redis,
         onDelay: ({ delay, args }) => {
-          console.log(`${logName}: delayed for ${delay}ms,`, args)
+          console.log(`${logName}: reached rate limit, delayed for ${delay}ms,`, args)
         },
       })(asyncWork)
+    }
     const start = Date.now()
+    const throttledAsyncWorkWithLogs = throttledAsyncWork('redis test')
     const results = await Promise.all([
-      throttledAsyncWork('foo')('foo', 300),
-      throttledAsyncWork('bar')('bar', 400),
-      throttledAsyncWork('baz')('baz', 1300),
-      throttledAsyncWork('qux')('qux', 0),
-    ]).catch((err) => {
-      console.error(err)
-    })
+      throttledAsyncWorkWithLogs('foo', 300),
+      throttledAsyncWorkWithLogs('bar', 400),
+      throttledAsyncWorkWithLogs('baz', 1300),
+      throttledAsyncWorkWithLogs('qux', 0),
+      throttledAsyncWorkWithLogs('quux', 0),
+      throttledAsyncWorkWithLogs('quuz', 0),
+      throttledAsyncWorkWithLogs('corge', 0),
+    ])
 
-    expect(results).toEqual(['foo', 'bar', 'baz', 'qux'])
+    expect(results).toEqual(['foo', 'bar', 'baz', 'qux', 'quux', 'quuz', 'corge'])
     expect(Date.now() - start).toBeGreaterThanOrEqual(2000)
   })
 })

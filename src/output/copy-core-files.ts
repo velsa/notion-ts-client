@@ -18,6 +18,7 @@ export function copyCoreFiles(opts: { fromPath: string; toPath: string }) {
     fs.copyFileSync(path.join(srcFromPath, 'generic-db.ts'), path.join(srcToPath, 'generic-db.ts'))
     fs.copyFileSync(path.join(srcFromPath, 'notion-urls.ts'), path.join(srcToPath, 'notion-urls.ts'))
     fs.copyFileSync(path.join(srcFromPath, 'p-throttle.ts'), path.join(srcToPath, 'p-throttle.ts'))
+    fs.copyFileSync(path.join(srcFromPath, 'redis-lock.ts'), path.join(srcToPath, 'redis-lock.ts'))
   }
 
   if (!fs.existsSync(typesToPath)) {
