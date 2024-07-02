@@ -12012,19 +12012,19 @@ export type UpdatePageBodyParameters = {
         string,
         | {
             title: Array<RichTextItemRequest>
-            type?: 'title'
+            type: 'title'
           }
         | {
             rich_text: Array<RichTextItemRequest>
-            type?: 'rich_text'
+            type: 'rich_text'
           }
         | {
             number: number | null
-            type?: 'number'
+            type: 'number'
           }
         | {
             url: TextRequest | null
-            type?: 'url'
+            type: 'url'
           }
         | {
             select:
@@ -12042,7 +12042,7 @@ export type UpdatePageBodyParameters = {
                   description?: StringRequest | null
                 }
               | null
-            type?: 'select'
+            type: 'select'
           }
         | {
             multi_select: Array<
@@ -12059,7 +12059,7 @@ export type UpdatePageBodyParameters = {
                   description?: StringRequest | null
                 }
             >
-            type?: 'multi_select'
+            type: 'multi_select'
           }
         | {
             people: Array<
@@ -12071,7 +12071,7 @@ export type UpdatePageBodyParameters = {
                     email?: string
                   }
                   id: IdRequest
-                  type?: 'person'
+                  type: 'person'
                   name?: string | null
                   avatar_url?: string | null
                   object?: 'user'
@@ -12103,35 +12103,35 @@ export type UpdatePageBodyParameters = {
                         workspace_name: string | null
                       }
                   id: IdRequest
-                  type?: 'bot'
+                  type: 'bot'
                   name?: string | null
                   avatar_url?: string | null
                   object?: 'user'
                 }
             >
-            type?: 'people'
+            type: 'people'
           }
         | {
             email: StringRequest | null
-            type?: 'email'
+            type: 'email'
           }
         | {
             phone_number: StringRequest | null
-            type?: 'phone_number'
+            type: 'phone_number'
           }
         | {
             date: DateRequest | null
-            type?: 'date'
+            type: 'date'
           }
         | {
             checkbox: boolean
-            type?: 'checkbox'
+            type: 'checkbox'
           }
         | {
             relation: Array<{
               id: IdRequest
             }>
-            type?: 'relation'
+            type: 'relation'
           }
         | {
             files: Array<
@@ -12141,17 +12141,17 @@ export type UpdatePageBodyParameters = {
                     expiry_time?: string
                   }
                   name: StringRequest
-                  type?: 'file'
+                  type: 'file'
                 }
               | {
                   external: {
                     url: TextRequest
                   }
                   name: StringRequest
-                  type?: 'external'
+                  type: 'external'
                 }
             >
-            type?: 'files'
+            type: 'files'
           }
         | {
             status:
@@ -12169,7 +12169,7 @@ export type UpdatePageBodyParameters = {
                   description?: StringRequest | null
                 }
               | null
-            type?: 'status'
+            type: 'status'
           }
       >
     | Record<
@@ -12217,7 +12217,7 @@ export type UpdatePageBodyParameters = {
                   email?: string
                 }
                 id: IdRequest
-                type?: 'person'
+                type: 'person'
                 name?: string | null
                 avatar_url?: string | null
                 object?: 'user'
@@ -12249,7 +12249,7 @@ export type UpdatePageBodyParameters = {
                       workspace_name: string | null
                     }
                 id: IdRequest
-                type?: 'bot'
+                type: 'bot'
                 name?: string | null
                 avatar_url?: string | null
                 object?: 'user'
@@ -12272,14 +12272,14 @@ export type UpdatePageBodyParameters = {
                   expiry_time?: string
                 }
                 name: StringRequest
-                type?: 'file'
+                type: 'file'
               }
             | {
                 external: {
                   url: TextRequest
                 }
                 name: StringRequest
-                type?: 'external'
+                type: 'external'
               }
           >
         | {
@@ -12300,21 +12300,21 @@ export type UpdatePageBodyParameters = {
   icon?:
     | {
         emoji: EmojiRequest
-        type?: 'emoji'
+        type: 'emoji'
       }
     | null
     | {
         external: {
           url: TextRequest
         }
-        type?: 'external'
+        type: 'external'
       }
     | null
   cover?: {
     external: {
       url: TextRequest
     }
-    type?: 'external'
+    type: 'external'
   } | null
   archived?: boolean
   in_trash?: boolean
