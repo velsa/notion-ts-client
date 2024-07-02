@@ -47,7 +47,6 @@ export type BotUserObjectResponse = {
   object: 'user'
 }
 export type UserObjectResponse = PersonUserObjectResponse | BotUserObjectResponse
-export type StringRequest = string
 export type SelectColor =
   | 'default'
   | 'gray'
@@ -59,9 +58,9 @@ export type SelectColor =
   | 'purple'
   | 'pink'
   | 'red'
-export type SelectPropertyResponse = {
-  id: StringRequest
-  name: StringRequest
+export type PartialSelectResponse = {
+  id: string
+  name: string
   color: SelectColor
 }
 export type TimeZoneRequest =
@@ -667,6 +666,7 @@ export type DateResponse = {
   end: string | null
   time_zone: TimeZoneRequest | null
 }
+export type StringRequest = string
 export type TextRequest = string
 export type StringFormulaPropertyResponse = {
   type: 'string'
@@ -4570,17 +4570,17 @@ export type PageObjectResponse = {
       }
     | {
         type: 'select'
-        select: SelectPropertyResponse | null
+        select: PartialSelectResponse | null
         id: string
       }
     | {
         type: 'multi_select'
-        multi_select: Array<SelectPropertyResponse>
+        multi_select: Array<PartialSelectResponse>
         id: string
       }
     | {
         type: 'status'
-        status: SelectPropertyResponse | null
+        status: PartialSelectResponse | null
         id: string
       }
     | {
@@ -4650,6 +4650,11 @@ export type PageObjectResponse = {
         id: string
       }
     | {
+        type: 'button'
+        button: Record<string, never>
+        id: string
+      }
+    | {
         type: 'unique_id'
         unique_id: {
           prefix: string | null
@@ -4710,15 +4715,15 @@ export type PageObjectResponse = {
                   }
                 | {
                     type: 'select'
-                    select: SelectPropertyResponse | null
+                    select: PartialSelectResponse | null
                   }
                 | {
                     type: 'multi_select'
-                    multi_select: Array<SelectPropertyResponse>
+                    multi_select: Array<PartialSelectResponse>
                   }
                 | {
                     type: 'status'
-                    status: SelectPropertyResponse | null
+                    status: PartialSelectResponse | null
                   }
                 | {
                     type: 'date'
@@ -4775,6 +4780,10 @@ export type PageObjectResponse = {
                 | {
                     type: 'formula'
                     formula: FormulaPropertyResponse
+                  }
+                | {
+                    type: 'button'
+                    button: Record<string, never>
                   }
                 | {
                     type: 'unique_id'
@@ -4855,6 +4864,7 @@ export type PageObjectResponse = {
   created_time: string
   last_edited_time: string
   archived: boolean
+  in_trash: boolean
   url: string
   public_url: string | null
 }
@@ -4867,6 +4877,7 @@ export type NumberFormat =
   | 'number_with_commas'
   | 'percent'
   | 'dollar'
+  | 'australian_dollar'
   | 'canadian_dollar'
   | 'singapore_dollar'
   | 'euro'
@@ -4903,6 +4914,7 @@ export type NumberFormat =
   | 'argentine_peso'
   | 'uruguayan_peso'
   | 'peruvian_sol'
+export type PropertyDescriptionRequest = string
 export type NumberDatabasePropertyConfigResponse = {
   type: 'number'
   number: {
@@ -4910,6 +4922,7 @@ export type NumberDatabasePropertyConfigResponse = {
   }
   id: string
   name: string
+  description: PropertyDescriptionRequest | null
 }
 export type FormulaDatabasePropertyConfigResponse = {
   type: 'formula'
@@ -4918,6 +4931,13 @@ export type FormulaDatabasePropertyConfigResponse = {
   }
   id: string
   name: string
+  description: PropertyDescriptionRequest | null
+}
+export type SelectPropertyResponse = {
+  id: StringRequest
+  name: StringRequest
+  color: SelectColor
+  description: StringRequest | null
 }
 export type SelectDatabasePropertyConfigResponse = {
   type: 'select'
@@ -4926,6 +4946,7 @@ export type SelectDatabasePropertyConfigResponse = {
   }
   id: string
   name: string
+  description: PropertyDescriptionRequest | null
 }
 export type MultiSelectDatabasePropertyConfigResponse = {
   type: 'multi_select'
@@ -4934,11 +4955,13 @@ export type MultiSelectDatabasePropertyConfigResponse = {
   }
   id: string
   name: string
+  description: PropertyDescriptionRequest | null
 }
 export type StatusPropertyResponse = {
   id: StringRequest
   name: StringRequest
   color: SelectColor
+  description: StringRequest | null
 }
 export type StatusDatabasePropertyConfigResponse = {
   type: 'status'
@@ -4953,6 +4976,7 @@ export type StatusDatabasePropertyConfigResponse = {
   }
   id: string
   name: string
+  description: PropertyDescriptionRequest | null
 }
 export type SinglePropertyDatabasePropertyRelationConfigResponse = {
   type: 'single_property'
@@ -4975,6 +4999,7 @@ export type RelationDatabasePropertyConfigResponse = {
   relation: DatabasePropertyRelationConfigResponse
   id: string
   name: string
+  description: PropertyDescriptionRequest | null
 }
 export type RollupDatabasePropertyConfigResponse = {
   type: 'rollup'
@@ -4987,6 +5012,7 @@ export type RollupDatabasePropertyConfigResponse = {
   }
   id: string
   name: string
+  description: PropertyDescriptionRequest | null
 }
 export type UniqueIdDatabasePropertyConfigResponse = {
   type: 'unique_id'
@@ -4995,84 +5021,98 @@ export type UniqueIdDatabasePropertyConfigResponse = {
   }
   id: string
   name: string
+  description: PropertyDescriptionRequest | null
 }
 export type TitleDatabasePropertyConfigResponse = {
   type: 'title'
   title: EmptyObject
   id: string
   name: string
+  description: PropertyDescriptionRequest | null
 }
 export type RichTextDatabasePropertyConfigResponse = {
   type: 'rich_text'
   rich_text: EmptyObject
   id: string
   name: string
+  description: PropertyDescriptionRequest | null
 }
 export type UrlDatabasePropertyConfigResponse = {
   type: 'url'
   url: EmptyObject
   id: string
   name: string
+  description: PropertyDescriptionRequest | null
 }
 export type PeopleDatabasePropertyConfigResponse = {
   type: 'people'
   people: EmptyObject
   id: string
   name: string
+  description: PropertyDescriptionRequest | null
 }
 export type FilesDatabasePropertyConfigResponse = {
   type: 'files'
   files: EmptyObject
   id: string
   name: string
+  description: PropertyDescriptionRequest | null
 }
 export type EmailDatabasePropertyConfigResponse = {
   type: 'email'
   email: EmptyObject
   id: string
   name: string
+  description: PropertyDescriptionRequest | null
 }
 export type PhoneNumberDatabasePropertyConfigResponse = {
   type: 'phone_number'
   phone_number: EmptyObject
   id: string
   name: string
+  description: PropertyDescriptionRequest | null
 }
 export type DateDatabasePropertyConfigResponse = {
   type: 'date'
   date: EmptyObject
   id: string
   name: string
+  description: PropertyDescriptionRequest | null
 }
 export type CheckboxDatabasePropertyConfigResponse = {
   type: 'checkbox'
   checkbox: EmptyObject
   id: string
   name: string
+  description: PropertyDescriptionRequest | null
 }
 export type CreatedByDatabasePropertyConfigResponse = {
   type: 'created_by'
   created_by: EmptyObject
   id: string
   name: string
+  description: PropertyDescriptionRequest | null
 }
 export type CreatedTimeDatabasePropertyConfigResponse = {
   type: 'created_time'
   created_time: EmptyObject
   id: string
   name: string
+  description: PropertyDescriptionRequest | null
 }
 export type LastEditedByDatabasePropertyConfigResponse = {
   type: 'last_edited_by'
   last_edited_by: EmptyObject
   id: string
   name: string
+  description: PropertyDescriptionRequest | null
 }
 export type LastEditedTimeDatabasePropertyConfigResponse = {
   type: 'last_edited_time'
   last_edited_time: EmptyObject
   id: string
   name: string
+  description: PropertyDescriptionRequest | null
 }
 export type DatabasePropertyConfigResponse =
   | NumberDatabasePropertyConfigResponse
@@ -5167,6 +5207,7 @@ export type DatabaseObjectResponse = {
   created_time: string
   last_edited_time: string
   archived: boolean
+  in_trash: boolean
   url: string
   public_url: string | null
 }
@@ -5225,6 +5266,7 @@ export type ParagraphBlockObjectResponse = {
   last_edited_by: PartialUserObjectResponse
   has_children: boolean
   archived: boolean
+  in_trash: boolean
 }
 export type Heading1BlockObjectResponse = {
   type: 'heading_1'
@@ -5258,6 +5300,7 @@ export type Heading1BlockObjectResponse = {
   last_edited_by: PartialUserObjectResponse
   has_children: boolean
   archived: boolean
+  in_trash: boolean
 }
 export type Heading2BlockObjectResponse = {
   type: 'heading_2'
@@ -5291,6 +5334,7 @@ export type Heading2BlockObjectResponse = {
   last_edited_by: PartialUserObjectResponse
   has_children: boolean
   archived: boolean
+  in_trash: boolean
 }
 export type Heading3BlockObjectResponse = {
   type: 'heading_3'
@@ -5324,6 +5368,7 @@ export type Heading3BlockObjectResponse = {
   last_edited_by: PartialUserObjectResponse
   has_children: boolean
   archived: boolean
+  in_trash: boolean
 }
 export type BulletedListItemBlockObjectResponse = {
   type: 'bulleted_list_item'
@@ -5356,6 +5401,7 @@ export type BulletedListItemBlockObjectResponse = {
   last_edited_by: PartialUserObjectResponse
   has_children: boolean
   archived: boolean
+  in_trash: boolean
 }
 export type NumberedListItemBlockObjectResponse = {
   type: 'numbered_list_item'
@@ -5388,6 +5434,7 @@ export type NumberedListItemBlockObjectResponse = {
   last_edited_by: PartialUserObjectResponse
   has_children: boolean
   archived: boolean
+  in_trash: boolean
 }
 export type QuoteBlockObjectResponse = {
   type: 'quote'
@@ -5420,6 +5467,7 @@ export type QuoteBlockObjectResponse = {
   last_edited_by: PartialUserObjectResponse
   has_children: boolean
   archived: boolean
+  in_trash: boolean
 }
 export type ToDoBlockObjectResponse = {
   type: 'to_do'
@@ -5453,6 +5501,7 @@ export type ToDoBlockObjectResponse = {
   last_edited_by: PartialUserObjectResponse
   has_children: boolean
   archived: boolean
+  in_trash: boolean
 }
 export type ToggleBlockObjectResponse = {
   type: 'toggle'
@@ -5485,6 +5534,7 @@ export type ToggleBlockObjectResponse = {
   last_edited_by: PartialUserObjectResponse
   has_children: boolean
   archived: boolean
+  in_trash: boolean
 }
 export type TemplateBlockObjectResponse = {
   type: 'template'
@@ -5516,6 +5566,7 @@ export type TemplateBlockObjectResponse = {
   last_edited_by: PartialUserObjectResponse
   has_children: boolean
   archived: boolean
+  in_trash: boolean
 }
 export type SyncedBlockBlockObjectResponse = {
   type: 'synced_block'
@@ -5550,6 +5601,7 @@ export type SyncedBlockBlockObjectResponse = {
   last_edited_by: PartialUserObjectResponse
   has_children: boolean
   archived: boolean
+  in_trash: boolean
 }
 export type ChildPageBlockObjectResponse = {
   type: 'child_page'
@@ -5581,6 +5633,7 @@ export type ChildPageBlockObjectResponse = {
   last_edited_by: PartialUserObjectResponse
   has_children: boolean
   archived: boolean
+  in_trash: boolean
 }
 export type ChildDatabaseBlockObjectResponse = {
   type: 'child_database'
@@ -5612,6 +5665,7 @@ export type ChildDatabaseBlockObjectResponse = {
   last_edited_by: PartialUserObjectResponse
   has_children: boolean
   archived: boolean
+  in_trash: boolean
 }
 export type EquationBlockObjectResponse = {
   type: 'equation'
@@ -5643,6 +5697,7 @@ export type EquationBlockObjectResponse = {
   last_edited_by: PartialUserObjectResponse
   has_children: boolean
   archived: boolean
+  in_trash: boolean
 }
 export type LanguageRequest =
   | 'abap'
@@ -5763,6 +5818,7 @@ export type CodeBlockObjectResponse = {
   last_edited_by: PartialUserObjectResponse
   has_children: boolean
   archived: boolean
+  in_trash: boolean
 }
 export type CalloutBlockObjectResponse = {
   type: 'callout'
@@ -5816,6 +5872,7 @@ export type CalloutBlockObjectResponse = {
   last_edited_by: PartialUserObjectResponse
   has_children: boolean
   archived: boolean
+  in_trash: boolean
 }
 export type DividerBlockObjectResponse = {
   type: 'divider'
@@ -5845,6 +5902,7 @@ export type DividerBlockObjectResponse = {
   last_edited_by: PartialUserObjectResponse
   has_children: boolean
   archived: boolean
+  in_trash: boolean
 }
 export type BreadcrumbBlockObjectResponse = {
   type: 'breadcrumb'
@@ -5874,6 +5932,7 @@ export type BreadcrumbBlockObjectResponse = {
   last_edited_by: PartialUserObjectResponse
   has_children: boolean
   archived: boolean
+  in_trash: boolean
 }
 export type TableOfContentsBlockObjectResponse = {
   type: 'table_of_contents'
@@ -5905,6 +5964,7 @@ export type TableOfContentsBlockObjectResponse = {
   last_edited_by: PartialUserObjectResponse
   has_children: boolean
   archived: boolean
+  in_trash: boolean
 }
 export type ColumnListBlockObjectResponse = {
   type: 'column_list'
@@ -5934,6 +5994,7 @@ export type ColumnListBlockObjectResponse = {
   last_edited_by: PartialUserObjectResponse
   has_children: boolean
   archived: boolean
+  in_trash: boolean
 }
 export type ColumnBlockObjectResponse = {
   type: 'column'
@@ -5963,6 +6024,7 @@ export type ColumnBlockObjectResponse = {
   last_edited_by: PartialUserObjectResponse
   has_children: boolean
   archived: boolean
+  in_trash: boolean
 }
 export type LinkToPageBlockObjectResponse = {
   type: 'link_to_page'
@@ -6004,6 +6066,7 @@ export type LinkToPageBlockObjectResponse = {
   last_edited_by: PartialUserObjectResponse
   has_children: boolean
   archived: boolean
+  in_trash: boolean
 }
 export type TableBlockObjectResponse = {
   type: 'table'
@@ -6037,6 +6100,7 @@ export type TableBlockObjectResponse = {
   last_edited_by: PartialUserObjectResponse
   has_children: boolean
   archived: boolean
+  in_trash: boolean
 }
 export type TableRowBlockObjectResponse = {
   type: 'table_row'
@@ -6068,6 +6132,7 @@ export type TableRowBlockObjectResponse = {
   last_edited_by: PartialUserObjectResponse
   has_children: boolean
   archived: boolean
+  in_trash: boolean
 }
 export type EmbedBlockObjectResponse = {
   type: 'embed'
@@ -6100,6 +6165,7 @@ export type EmbedBlockObjectResponse = {
   last_edited_by: PartialUserObjectResponse
   has_children: boolean
   archived: boolean
+  in_trash: boolean
 }
 export type BookmarkBlockObjectResponse = {
   type: 'bookmark'
@@ -6132,6 +6198,7 @@ export type BookmarkBlockObjectResponse = {
   last_edited_by: PartialUserObjectResponse
   has_children: boolean
   archived: boolean
+  in_trash: boolean
 }
 export type ImageBlockObjectResponse = {
   type: 'image'
@@ -6176,6 +6243,7 @@ export type ImageBlockObjectResponse = {
   last_edited_by: PartialUserObjectResponse
   has_children: boolean
   archived: boolean
+  in_trash: boolean
 }
 export type VideoBlockObjectResponse = {
   type: 'video'
@@ -6220,6 +6288,7 @@ export type VideoBlockObjectResponse = {
   last_edited_by: PartialUserObjectResponse
   has_children: boolean
   archived: boolean
+  in_trash: boolean
 }
 export type PdfBlockObjectResponse = {
   type: 'pdf'
@@ -6264,6 +6333,7 @@ export type PdfBlockObjectResponse = {
   last_edited_by: PartialUserObjectResponse
   has_children: boolean
   archived: boolean
+  in_trash: boolean
 }
 export type FileBlockObjectResponse = {
   type: 'file'
@@ -6310,6 +6380,7 @@ export type FileBlockObjectResponse = {
   last_edited_by: PartialUserObjectResponse
   has_children: boolean
   archived: boolean
+  in_trash: boolean
 }
 export type AudioBlockObjectResponse = {
   type: 'audio'
@@ -6354,6 +6425,7 @@ export type AudioBlockObjectResponse = {
   last_edited_by: PartialUserObjectResponse
   has_children: boolean
   archived: boolean
+  in_trash: boolean
 }
 export type LinkPreviewBlockObjectResponse = {
   type: 'link_preview'
@@ -6385,6 +6457,7 @@ export type LinkPreviewBlockObjectResponse = {
   last_edited_by: PartialUserObjectResponse
   has_children: boolean
   archived: boolean
+  in_trash: boolean
 }
 export type UnsupportedBlockObjectResponse = {
   type: 'unsupported'
@@ -6414,6 +6487,7 @@ export type UnsupportedBlockObjectResponse = {
   last_edited_by: PartialUserObjectResponse
   has_children: boolean
   archived: boolean
+  in_trash: boolean
 }
 export type BlockObjectResponse =
   | ParagraphBlockObjectResponse
@@ -6463,19 +6537,19 @@ export type UrlPropertyItemObjectResponse = {
 }
 export type SelectPropertyItemObjectResponse = {
   type: 'select'
-  select: SelectPropertyResponse | null
+  select: PartialSelectResponse | null
   object: 'property_item'
   id: string
 }
 export type MultiSelectPropertyItemObjectResponse = {
   type: 'multi_select'
-  multi_select: Array<SelectPropertyResponse>
+  multi_select: Array<PartialSelectResponse>
   object: 'property_item'
   id: string
 }
 export type StatusPropertyItemObjectResponse = {
   type: 'status'
-  status: SelectPropertyResponse | null
+  status: PartialSelectResponse | null
   object: 'property_item'
   id: string
 }
@@ -6555,6 +6629,12 @@ export type FormulaPropertyItemObjectResponse = {
   object: 'property_item'
   id: string
 }
+export type ButtonPropertyItemObjectResponse = {
+  type: 'button'
+  button: Record<string, never>
+  object: 'property_item'
+  id: string
+}
 export type UniqueIdPropertyItemObjectResponse = {
   type: 'unique_id'
   unique_id: {
@@ -6572,13 +6652,13 @@ export type VerificationPropertyItemObjectResponse = {
 }
 export type TitlePropertyItemObjectResponse = {
   type: 'title'
-  title: RichTextItemResponse[]
+  title: RichTextItemResponse
   object: 'property_item'
   id: string
 }
 export type RichTextPropertyItemObjectResponse = {
   type: 'rich_text'
-  rich_text: RichTextItemResponse[]
+  rich_text: RichTextItemResponse
   object: 'property_item'
   id: string
 }
@@ -6643,6 +6723,7 @@ export type PropertyItemObjectResponse =
   | LastEditedByPropertyItemObjectResponse
   | LastEditedTimePropertyItemObjectResponse
   | FormulaPropertyItemObjectResponse
+  | ButtonPropertyItemObjectResponse
   | UniqueIdPropertyItemObjectResponse
   | VerificationPropertyItemObjectResponse
   | TitlePropertyItemObjectResponse
@@ -11611,12 +11692,14 @@ export type CreatePageBodyParameters = {
                   id: StringRequest
                   name?: StringRequest
                   color?: SelectColor
+                  description?: StringRequest | null
                 }
               | null
               | {
                   name: StringRequest
                   id?: StringRequest
                   color?: SelectColor
+                  description?: StringRequest | null
                 }
               | null
             type?: 'select'
@@ -11627,11 +11710,13 @@ export type CreatePageBodyParameters = {
                   id: StringRequest
                   name?: StringRequest
                   color?: SelectColor
+                  description?: StringRequest | null
                 }
               | {
                   name: StringRequest
                   id?: StringRequest
                   color?: SelectColor
+                  description?: StringRequest | null
                 }
             >
             type?: 'multi_select'
@@ -11734,12 +11819,14 @@ export type CreatePageBodyParameters = {
                   id: StringRequest
                   name?: StringRequest
                   color?: SelectColor
+                  description?: StringRequest | null
                 }
               | null
               | {
                   name: StringRequest
                   id?: StringRequest
                   color?: SelectColor
+                  description?: StringRequest | null
                 }
               | null
             type?: 'status'
@@ -11757,12 +11844,14 @@ export type CreatePageBodyParameters = {
             id: StringRequest
             name?: StringRequest
             color?: SelectColor
+            description?: StringRequest | null
           }
         | null
         | {
             name: StringRequest
             id?: StringRequest
             color?: SelectColor
+            description?: StringRequest | null
           }
         | null
         | Array<
@@ -11770,11 +11859,13 @@ export type CreatePageBodyParameters = {
                 id: StringRequest
                 name?: StringRequest
                 color?: SelectColor
+                description?: StringRequest | null
               }
             | {
                 name: StringRequest
                 id?: StringRequest
                 color?: SelectColor
+                description?: StringRequest | null
               }
           >
         | Array<
@@ -11855,12 +11946,14 @@ export type CreatePageBodyParameters = {
             id: StringRequest
             name?: StringRequest
             color?: SelectColor
+            description?: StringRequest | null
           }
         | null
         | {
             name: StringRequest
             id?: StringRequest
             color?: SelectColor
+            description?: StringRequest | null
           }
         | null
       >
@@ -11919,19 +12012,19 @@ export type UpdatePageBodyParameters = {
         string,
         | {
             title: Array<RichTextItemRequest>
-            type: 'title'
+            type?: 'title'
           }
         | {
             rich_text: Array<RichTextItemRequest>
-            type: 'rich_text'
+            type?: 'rich_text'
           }
         | {
             number: number | null
-            type: 'number'
+            type?: 'number'
           }
         | {
             url: TextRequest | null
-            type: 'url'
+            type?: 'url'
           }
         | {
             select:
@@ -11939,15 +12032,17 @@ export type UpdatePageBodyParameters = {
                   id: StringRequest
                   name?: StringRequest
                   color?: SelectColor
+                  description?: StringRequest | null
                 }
               | null
               | {
                   name: StringRequest
                   id?: StringRequest
                   color?: SelectColor
+                  description?: StringRequest | null
                 }
               | null
-            type: 'select'
+            type?: 'select'
           }
         | {
             multi_select: Array<
@@ -11955,14 +12050,16 @@ export type UpdatePageBodyParameters = {
                   id: StringRequest
                   name?: StringRequest
                   color?: SelectColor
+                  description?: StringRequest | null
                 }
               | {
                   name: StringRequest
                   id?: StringRequest
                   color?: SelectColor
+                  description?: StringRequest | null
                 }
             >
-            type: 'multi_select'
+            type?: 'multi_select'
           }
         | {
             people: Array<
@@ -11974,7 +12071,7 @@ export type UpdatePageBodyParameters = {
                     email?: string
                   }
                   id: IdRequest
-                  type: 'person'
+                  type?: 'person'
                   name?: string | null
                   avatar_url?: string | null
                   object?: 'user'
@@ -12006,35 +12103,35 @@ export type UpdatePageBodyParameters = {
                         workspace_name: string | null
                       }
                   id: IdRequest
-                  type: 'bot'
+                  type?: 'bot'
                   name?: string | null
                   avatar_url?: string | null
                   object?: 'user'
                 }
             >
-            type: 'people'
+            type?: 'people'
           }
         | {
             email: StringRequest | null
-            type: 'email'
+            type?: 'email'
           }
         | {
             phone_number: StringRequest | null
-            type: 'phone_number'
+            type?: 'phone_number'
           }
         | {
             date: DateRequest | null
-            type: 'date'
+            type?: 'date'
           }
         | {
             checkbox: boolean
-            type: 'checkbox'
+            type?: 'checkbox'
           }
         | {
             relation: Array<{
               id: IdRequest
             }>
-            type: 'relation'
+            type?: 'relation'
           }
         | {
             files: Array<
@@ -12044,17 +12141,17 @@ export type UpdatePageBodyParameters = {
                     expiry_time?: string
                   }
                   name: StringRequest
-                  type: 'file'
+                  type?: 'file'
                 }
               | {
                   external: {
                     url: TextRequest
                   }
                   name: StringRequest
-                  type: 'external'
+                  type?: 'external'
                 }
             >
-            type: 'files'
+            type?: 'files'
           }
         | {
             status:
@@ -12062,15 +12159,17 @@ export type UpdatePageBodyParameters = {
                   id: StringRequest
                   name?: StringRequest
                   color?: SelectColor
+                  description?: StringRequest | null
                 }
               | null
               | {
                   name: StringRequest
                   id?: StringRequest
                   color?: SelectColor
+                  description?: StringRequest | null
                 }
               | null
-            type: 'status'
+            type?: 'status'
           }
       >
     | Record<
@@ -12085,12 +12184,14 @@ export type UpdatePageBodyParameters = {
             id: StringRequest
             name?: StringRequest
             color?: SelectColor
+            description?: StringRequest | null
           }
         | null
         | {
             name: StringRequest
             id?: StringRequest
             color?: SelectColor
+            description?: StringRequest | null
           }
         | null
         | Array<
@@ -12098,11 +12199,13 @@ export type UpdatePageBodyParameters = {
                 id: StringRequest
                 name?: StringRequest
                 color?: SelectColor
+                description?: StringRequest | null
               }
             | {
                 name: StringRequest
                 id?: StringRequest
                 color?: SelectColor
+                description?: StringRequest | null
               }
           >
         | Array<
@@ -12114,7 +12217,7 @@ export type UpdatePageBodyParameters = {
                   email?: string
                 }
                 id: IdRequest
-                type: 'person'
+                type?: 'person'
                 name?: string | null
                 avatar_url?: string | null
                 object?: 'user'
@@ -12146,7 +12249,7 @@ export type UpdatePageBodyParameters = {
                       workspace_name: string | null
                     }
                 id: IdRequest
-                type: 'bot'
+                type?: 'bot'
                 name?: string | null
                 avatar_url?: string | null
                 object?: 'user'
@@ -12169,49 +12272,52 @@ export type UpdatePageBodyParameters = {
                   expiry_time?: string
                 }
                 name: StringRequest
-                type: 'file'
+                type?: 'file'
               }
             | {
                 external: {
                   url: TextRequest
                 }
                 name: StringRequest
-                type: 'external'
+                type?: 'external'
               }
           >
         | {
             id: StringRequest
             name?: StringRequest
             color?: SelectColor
+            description?: StringRequest | null
           }
         | null
         | {
             name: StringRequest
             id?: StringRequest
             color?: SelectColor
+            description?: StringRequest | null
           }
         | null
       >
   icon?:
     | {
         emoji: EmojiRequest
-        type: 'emoji'
+        type?: 'emoji'
       }
     | null
     | {
         external: {
           url: TextRequest
         }
-        type: 'external'
+        type?: 'external'
       }
     | null
   cover?: {
     external: {
       url: TextRequest
     }
-    type: 'external'
+    type?: 'external'
   } | null
   archived?: boolean
+  in_trash?: boolean
 }
 export type UpdatePageParameters = UpdatePagePathParameters & UpdatePageBodyParameters
 export type UpdatePageResponse = PageObjectResponse | PartialPageObjectResponse
@@ -12219,7 +12325,7 @@ export declare const updatePage: {
   readonly method: 'patch'
   readonly pathParams: readonly ['page_id']
   readonly queryParams: readonly []
-  readonly bodyParams: readonly ['properties', 'icon', 'cover', 'archived']
+  readonly bodyParams: readonly ['properties', 'icon', 'cover', 'archived', 'in_trash']
   readonly path: (p: UpdatePagePathParameters) => string
 }
 export type GetPagePropertyPathParameters = {
@@ -12262,6 +12368,7 @@ export type UpdateBlockBodyParameters =
       }
       type?: 'embed'
       archived?: boolean
+      in_trash?: boolean
     }
   | {
       bookmark: {
@@ -12270,6 +12377,7 @@ export type UpdateBlockBodyParameters =
       }
       type?: 'bookmark'
       archived?: boolean
+      in_trash?: boolean
     }
   | {
       image: {
@@ -12280,6 +12388,7 @@ export type UpdateBlockBodyParameters =
       }
       type?: 'image'
       archived?: boolean
+      in_trash?: boolean
     }
   | {
       video: {
@@ -12290,6 +12399,7 @@ export type UpdateBlockBodyParameters =
       }
       type?: 'video'
       archived?: boolean
+      in_trash?: boolean
     }
   | {
       pdf: {
@@ -12300,6 +12410,7 @@ export type UpdateBlockBodyParameters =
       }
       type?: 'pdf'
       archived?: boolean
+      in_trash?: boolean
     }
   | {
       file: {
@@ -12311,6 +12422,7 @@ export type UpdateBlockBodyParameters =
       }
       type?: 'file'
       archived?: boolean
+      in_trash?: boolean
     }
   | {
       audio: {
@@ -12321,6 +12433,7 @@ export type UpdateBlockBodyParameters =
       }
       type?: 'audio'
       archived?: boolean
+      in_trash?: boolean
     }
   | {
       code: {
@@ -12330,6 +12443,7 @@ export type UpdateBlockBodyParameters =
       }
       type?: 'code'
       archived?: boolean
+      in_trash?: boolean
     }
   | {
       equation: {
@@ -12337,16 +12451,19 @@ export type UpdateBlockBodyParameters =
       }
       type?: 'equation'
       archived?: boolean
+      in_trash?: boolean
     }
   | {
       divider: EmptyObject
       type?: 'divider'
       archived?: boolean
+      in_trash?: boolean
     }
   | {
       breadcrumb: EmptyObject
       type?: 'breadcrumb'
       archived?: boolean
+      in_trash?: boolean
     }
   | {
       table_of_contents: {
@@ -12354,6 +12471,7 @@ export type UpdateBlockBodyParameters =
       }
       type?: 'table_of_contents'
       archived?: boolean
+      in_trash?: boolean
     }
   | {
       link_to_page:
@@ -12371,6 +12489,7 @@ export type UpdateBlockBodyParameters =
           }
       type?: 'link_to_page'
       archived?: boolean
+      in_trash?: boolean
     }
   | {
       table_row: {
@@ -12378,6 +12497,7 @@ export type UpdateBlockBodyParameters =
       }
       type?: 'table_row'
       archived?: boolean
+      in_trash?: boolean
     }
   | {
       heading_1: {
@@ -12387,6 +12507,7 @@ export type UpdateBlockBodyParameters =
       }
       type?: 'heading_1'
       archived?: boolean
+      in_trash?: boolean
     }
   | {
       heading_2: {
@@ -12396,6 +12517,7 @@ export type UpdateBlockBodyParameters =
       }
       type?: 'heading_2'
       archived?: boolean
+      in_trash?: boolean
     }
   | {
       heading_3: {
@@ -12405,6 +12527,7 @@ export type UpdateBlockBodyParameters =
       }
       type?: 'heading_3'
       archived?: boolean
+      in_trash?: boolean
     }
   | {
       paragraph: {
@@ -12413,6 +12536,7 @@ export type UpdateBlockBodyParameters =
       }
       type?: 'paragraph'
       archived?: boolean
+      in_trash?: boolean
     }
   | {
       bulleted_list_item: {
@@ -12421,6 +12545,7 @@ export type UpdateBlockBodyParameters =
       }
       type?: 'bulleted_list_item'
       archived?: boolean
+      in_trash?: boolean
     }
   | {
       numbered_list_item: {
@@ -12429,6 +12554,7 @@ export type UpdateBlockBodyParameters =
       }
       type?: 'numbered_list_item'
       archived?: boolean
+      in_trash?: boolean
     }
   | {
       quote: {
@@ -12437,6 +12563,7 @@ export type UpdateBlockBodyParameters =
       }
       type?: 'quote'
       archived?: boolean
+      in_trash?: boolean
     }
   | {
       to_do: {
@@ -12446,6 +12573,7 @@ export type UpdateBlockBodyParameters =
       }
       type?: 'to_do'
       archived?: boolean
+      in_trash?: boolean
     }
   | {
       toggle: {
@@ -12454,6 +12582,7 @@ export type UpdateBlockBodyParameters =
       }
       type?: 'toggle'
       archived?: boolean
+      in_trash?: boolean
     }
   | {
       template: {
@@ -12461,6 +12590,7 @@ export type UpdateBlockBodyParameters =
       }
       type?: 'template'
       archived?: boolean
+      in_trash?: boolean
     }
   | {
       callout: {
@@ -12480,6 +12610,7 @@ export type UpdateBlockBodyParameters =
       }
       type?: 'callout'
       archived?: boolean
+      in_trash?: boolean
     }
   | {
       synced_block: {
@@ -12490,6 +12621,7 @@ export type UpdateBlockBodyParameters =
       }
       type?: 'synced_block'
       archived?: boolean
+      in_trash?: boolean
     }
   | {
       table: {
@@ -12498,9 +12630,11 @@ export type UpdateBlockBodyParameters =
       }
       type?: 'table'
       archived?: boolean
+      in_trash?: boolean
     }
   | {
       archived?: boolean
+      in_trash?: boolean
     }
 export type UpdateBlockParameters = UpdateBlockPathParameters & UpdateBlockBodyParameters
 export type UpdateBlockResponse = PartialBlockObjectResponse | BlockObjectResponse
@@ -12512,6 +12646,7 @@ export declare const updateBlock: {
     'embed',
     'type',
     'archived',
+    'in_trash',
     'bookmark',
     'image',
     'video',
@@ -12644,6 +12779,7 @@ export type UpdateDatabaseBodyParameters = {
         }
         type?: 'number'
         name?: string
+        description?: PropertyDescriptionRequest | null
       }
     | null
     | {
@@ -12652,6 +12788,7 @@ export type UpdateDatabaseBodyParameters = {
         }
         type?: 'formula'
         name?: string
+        description?: PropertyDescriptionRequest | null
       }
     | null
     | {
@@ -12661,16 +12798,19 @@ export type UpdateDatabaseBodyParameters = {
                 id: StringRequest
                 name?: StringRequest
                 color?: SelectColor
+                description?: StringRequest | null
               }
             | {
                 name: StringRequest
                 id?: StringRequest
                 color?: SelectColor
+                description?: StringRequest | null
               }
           >
         }
         type?: 'select'
         name?: string
+        description?: PropertyDescriptionRequest | null
       }
     | null
     | {
@@ -12680,16 +12820,19 @@ export type UpdateDatabaseBodyParameters = {
                 id: StringRequest
                 name?: StringRequest
                 color?: SelectColor
+                description?: StringRequest | null
               }
             | {
                 name: StringRequest
                 id?: StringRequest
                 color?: SelectColor
+                description?: StringRequest | null
               }
           >
         }
         type?: 'multi_select'
         name?: string
+        description?: PropertyDescriptionRequest | null
       }
     | null
     | {
@@ -12706,6 +12849,7 @@ export type UpdateDatabaseBodyParameters = {
             }
         type?: 'relation'
         name?: string
+        description?: PropertyDescriptionRequest | null
       }
     | null
     | {
@@ -12740,6 +12884,7 @@ export type UpdateDatabaseBodyParameters = {
             }
         type?: 'rollup'
         name?: string
+        description?: PropertyDescriptionRequest | null
       }
     | null
     | {
@@ -12748,84 +12893,98 @@ export type UpdateDatabaseBodyParameters = {
         }
         type?: 'unique_id'
         name?: string
+        description?: PropertyDescriptionRequest | null
       }
     | null
     | {
         title: EmptyObject
         type?: 'title'
         name?: string
+        description?: PropertyDescriptionRequest | null
       }
     | null
     | {
         rich_text: EmptyObject
         type?: 'rich_text'
         name?: string
+        description?: PropertyDescriptionRequest | null
       }
     | null
     | {
         url: EmptyObject
         type?: 'url'
         name?: string
+        description?: PropertyDescriptionRequest | null
       }
     | null
     | {
         people: EmptyObject
         type?: 'people'
         name?: string
+        description?: PropertyDescriptionRequest | null
       }
     | null
     | {
         files: EmptyObject
         type?: 'files'
         name?: string
+        description?: PropertyDescriptionRequest | null
       }
     | null
     | {
         email: EmptyObject
         type?: 'email'
         name?: string
+        description?: PropertyDescriptionRequest | null
       }
     | null
     | {
         phone_number: EmptyObject
         type?: 'phone_number'
         name?: string
+        description?: PropertyDescriptionRequest | null
       }
     | null
     | {
         date: EmptyObject
         type?: 'date'
         name?: string
+        description?: PropertyDescriptionRequest | null
       }
     | null
     | {
         checkbox: EmptyObject
         type?: 'checkbox'
         name?: string
+        description?: PropertyDescriptionRequest | null
       }
     | null
     | {
         created_by: EmptyObject
         type?: 'created_by'
         name?: string
+        description?: PropertyDescriptionRequest | null
       }
     | null
     | {
         created_time: EmptyObject
         type?: 'created_time'
         name?: string
+        description?: PropertyDescriptionRequest | null
       }
     | null
     | {
         last_edited_by: EmptyObject
         type?: 'last_edited_by'
         name?: string
+        description?: PropertyDescriptionRequest | null
       }
     | null
     | {
         last_edited_time: EmptyObject
         type?: 'last_edited_time'
         name?: string
+        description?: PropertyDescriptionRequest | null
       }
     | null
     | {
@@ -12835,6 +12994,7 @@ export type UpdateDatabaseBodyParameters = {
   >
   is_inline?: boolean
   archived?: boolean
+  in_trash?: boolean
 }
 export type UpdateDatabaseParameters = UpdateDatabasePathParameters & UpdateDatabaseBodyParameters
 export type UpdateDatabaseResponse = PartialDatabaseObjectResponse | DatabaseObjectResponse
@@ -12842,7 +13002,16 @@ export declare const updateDatabase: {
   readonly method: 'patch'
   readonly pathParams: readonly ['database_id']
   readonly queryParams: readonly []
-  readonly bodyParams: readonly ['title', 'description', 'icon', 'cover', 'properties', 'is_inline', 'archived']
+  readonly bodyParams: readonly [
+    'title',
+    'description',
+    'icon',
+    'cover',
+    'properties',
+    'is_inline',
+    'archived',
+    'in_trash',
+  ]
   readonly path: (p: UpdateDatabasePathParameters) => string
 }
 export type QueryDatabasePathParameters = {
@@ -12895,6 +13064,7 @@ export type QueryDatabaseBodyParameters = {
   start_cursor?: string
   page_size?: number
   archived?: boolean
+  in_trash?: boolean
 }
 export type QueryDatabaseParameters = QueryDatabasePathParameters &
   QueryDatabaseQueryParameters &
@@ -12913,7 +13083,7 @@ export declare const queryDatabase: {
   readonly method: 'post'
   readonly pathParams: readonly ['database_id']
   readonly queryParams: readonly ['filter_properties']
-  readonly bodyParams: readonly ['sorts', 'filter', 'start_cursor', 'page_size', 'archived']
+  readonly bodyParams: readonly ['sorts', 'filter', 'start_cursor', 'page_size', 'archived', 'in_trash']
   readonly path: (p: QueryDatabasePathParameters) => string
 }
 export type ListDatabasesQueryParameters = {
@@ -12953,30 +13123,36 @@ export type CreateDatabaseBodyParameters = {
           format?: NumberFormat
         }
         type?: 'number'
+        description?: PropertyDescriptionRequest | null
       }
     | {
         formula: {
           expression?: string
         }
         type?: 'formula'
+        description?: PropertyDescriptionRequest | null
       }
     | {
         select: {
           options?: Array<{
             name: StringRequest
             color?: SelectColor
+            description?: StringRequest | null
           }>
         }
         type?: 'select'
+        description?: PropertyDescriptionRequest | null
       }
     | {
         multi_select: {
           options?: Array<{
             name: StringRequest
             color?: SelectColor
+            description?: StringRequest | null
           }>
         }
         type?: 'multi_select'
+        description?: PropertyDescriptionRequest | null
       }
     | {
         relation:
@@ -12991,6 +13167,7 @@ export type CreateDatabaseBodyParameters = {
               type?: 'dual_property'
             }
         type?: 'relation'
+        description?: PropertyDescriptionRequest | null
       }
     | {
         rollup:
@@ -13023,64 +13200,79 @@ export type CreateDatabaseBodyParameters = {
               relation_property_name?: string
             }
         type?: 'rollup'
+        description?: PropertyDescriptionRequest | null
       }
     | {
         unique_id: {
           prefix?: string | null
         }
         type?: 'unique_id'
+        description?: PropertyDescriptionRequest | null
       }
     | {
         title: EmptyObject
         type?: 'title'
+        description?: PropertyDescriptionRequest | null
       }
     | {
         rich_text: EmptyObject
         type?: 'rich_text'
+        description?: PropertyDescriptionRequest | null
       }
     | {
         url: EmptyObject
         type?: 'url'
+        description?: PropertyDescriptionRequest | null
       }
     | {
         people: EmptyObject
         type?: 'people'
+        description?: PropertyDescriptionRequest | null
       }
     | {
         files: EmptyObject
         type?: 'files'
+        description?: PropertyDescriptionRequest | null
       }
     | {
         email: EmptyObject
         type?: 'email'
+        description?: PropertyDescriptionRequest | null
       }
     | {
         phone_number: EmptyObject
         type?: 'phone_number'
+        description?: PropertyDescriptionRequest | null
       }
     | {
         date: EmptyObject
         type?: 'date'
+        description?: PropertyDescriptionRequest | null
       }
     | {
         checkbox: EmptyObject
         type?: 'checkbox'
+        description?: PropertyDescriptionRequest | null
       }
     | {
         created_by: EmptyObject
         type?: 'created_by'
+        description?: PropertyDescriptionRequest | null
       }
     | {
         created_time: EmptyObject
         type?: 'created_time'
+        description?: PropertyDescriptionRequest | null
       }
     | {
         last_edited_by: EmptyObject
         type?: 'last_edited_by'
+        description?: PropertyDescriptionRequest | null
       }
     | {
         last_edited_time: EmptyObject
         type?: 'last_edited_time'
+        description?: PropertyDescriptionRequest | null
       }
   >
   icon?:

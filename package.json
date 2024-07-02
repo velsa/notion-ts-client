@@ -1,6 +1,6 @@
 {
   "name": "notion-ts-client",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "description": "Generates an easy to use and fully typed API to access and modify the data in Notion Databases",
   "repository": "https://github.com/velsa/notion-ts-client",
   "homepage": "https://github.com/velsa/notion-ts-client",
@@ -34,7 +34,7 @@
   },
   "dependencies": {
     "@inquirer/prompts": "^4.1.0",
-    "@notionhq/client": "^2.2.14",
+    "@notionhq/client": "^2.2.15",
     "chalk": "^5.3.0",
     "change-case-all": "^2.1.0",
     "commander": "^11.1.0",
