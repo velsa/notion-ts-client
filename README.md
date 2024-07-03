@@ -24,37 +24,35 @@ Create complex calculations and intelligent automations for your Notion Database
 
 ```ts
 // Let's imagine you have a database of online events in your Notion :)
-import {
-  OnlineEventsDatabase,
-  OnlineEventsResponseDTO,
-  OnlineEventsPatchDTO
-} from 'notion-sdk/dbs/online-events'
+import { OnlineEventsDatabase, OnlineEventsResponseDTO, OnlineEventsPatchDTO } from 'notion-sdk/dbs/online-events'
 
 // Use custom generated database class to work with your DB
 const db = new OnlineEventsDatabase({
   notionSecret: process.env.MY_NOTION_SECRET,
-});
+})
 
 // Query the Notion DB using fully typed filter and sorts
 const queryResponse = await db.query({
-  filter: { and: [
-    type: { contains: "Webinar" }, // <--- type safe!
-    organization: { equals: "My Org" }, // <--- type safe!
-  ]},
-  sorts: [{ property: "name", direction: "ascending" }],  // <--- type safe!
-});
+  filter: {
+    and: [
+      { type: { contains: 'Webinar' } }, // <--- type safe!
+      { organization: { equals: 'My Org' } }, // <--- type safe!
+    ],
+  },
+  sorts: [{ property: 'name', direction: 'ascending' }], // <--- type safe!
+})
 
 // Access your page properties via custom generated ResponseDTO (Data Transfer Object)
-const pages = queryResponse.results.map((r) => new OnlineEventsResponseDTO(r));
+const pages = queryResponse.results.map((r) => new OnlineEventsResponseDTO(r))
 
-console.log(pages[0].properties.organization); // <--- type safe!
+console.log(pages[0].properties.organization) // <--- type safe!
 
 // Update your Notion DB via a fully typed custom PatchDTO
 // Note: for your convenience readOnly properties are not available on PatchDTO
 const pageUpdate = new OnlineEventsPatchDTO({
   properties: {
-    organization: 'Some org'
-  }
+    organization: 'Some org',
+  },
 })
 
 await db.updatePage(pages[0].id, pageUpdate)
