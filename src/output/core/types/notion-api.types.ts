@@ -6652,13 +6652,13 @@ export type VerificationPropertyItemObjectResponse = {
 }
 export type TitlePropertyItemObjectResponse = {
   type: 'title'
-  title: RichTextItemResponse
+  title: RichTextItemResponse[]
   object: 'property_item'
   id: string
 }
 export type RichTextPropertyItemObjectResponse = {
   type: 'rich_text'
-  rich_text: RichTextItemResponse
+  rich_text: RichTextItemResponse[]
   object: 'property_item'
   id: string
 }
