@@ -1,6 +1,6 @@
 {
   "name": "notion-ts-client",
-  "version": "0.2.9",
+  "version": "0.2.10",
   "description": "Generates an easy to use and fully typed API to access and modify the data in Notion Databases",
   "repository": "https://github.com/velsa/notion-ts-client",
   "homepage": "https://github.com/velsa/notion-ts-client",
