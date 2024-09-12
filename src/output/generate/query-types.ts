@@ -86,7 +86,7 @@ function getDBCustomFilterType(dbTypeName: string, propsConfig: ConfigFileProper
 function getCustomFilterTypes(dbTypeName: string, propsConfig: ConfigFilePropertiesConfig) {
   return Object.values(propsConfig)
     .map((prop) => {
-      const typePrefix = `${dbTypeName}${makeTypeName(prop.varName)}`
+      const typePrefix = `${dbTypeName}${makeTypeName(prop.varName.replace(/_/g, ' '))}`
 
       switch (prop._type) {
         case 'status':

@@ -17,7 +17,7 @@ export function normalizeProperty(property: string, caseType: 'camelCase' | 'keb
 }
 
 export function makeTypeName(varName: string) {
-  const typeName = capitalizeVarName(varName)
+  const typeName = changeCase.pascalCase(varName)
 
   if (!typeName?.length) {
     // throw new Error(`Could not normalize property: ${property}. Got empty string!`)
