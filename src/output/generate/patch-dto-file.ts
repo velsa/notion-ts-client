@@ -121,7 +121,22 @@ function getDTOFileCode(dbPropsConfig: ConfigFilePropertiesConfig) {
 
       objValue = `
         type: '${propConfig._type}',
-        ${propConfig._type}: typeof ${propsVar} === 'string' ? [{ type: 'text', text: { content: ${propsVar} } }] : !Array.isArray(${propsVar}) ? [{ type: 'text', text: { content: ${propsVar}.text, link: ${propsVar}.url ? { url: ${propsVar}.url } : undefined }, annotations: ${propsVar}.annotations }] : ${propsVar},`
+        ${propConfig._type}: typeof ${propsVar} === 'string' 
+          ? [{ type: 'text', text: { content: ${propsVar} } }]
+          : Array.isArray(${propsVar})
+            ? ${propsVar}
+            : ${propsVar} === null
+              ? []
+              : [
+                  {
+                    type: 'text',
+                    text: {
+                      content: ${propsVar}.text,
+                      link: ${propsVar}?.url ? { url: ${propsVar}.url } : undefined
+                    },
+                    annotations: ${propsVar}.annotations
+                  },
+                ]`
     } else {
       objValue = `
         type: '${propConfig._type}',
