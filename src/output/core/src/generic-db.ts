@@ -1,5 +1,5 @@
 import {
-  AppendBlockChildrenParameters,
+  AppendBlockChildrenBodyParameters,
   BlockObjectRequest,
   BlockObjectResponse,
   CreatePageBodyParameters,
@@ -12,7 +12,7 @@ import {
   notionBlockApiURL,
   notionDatabaseQueryURL,
   notionPageApiURL,
-  notionPageContentApiURL,
+  notionBlockChildrenApiURL,
 } from './notion-urls'
 import pThrottle, { ThrottleConfig } from './p-throttle'
 
@@ -290,14 +290,15 @@ export abstract class GenericDatabaseClass<
   async appendBlockChildren(
     id: string,
     content: BlockObjectRequest[],
-    opts?: AppendBlockChildrenParameters,
+    opts?: Omit<AppendBlockChildrenBodyParameters, 'children'>,
   ): Promise<ListBlockChildrenResponse> {
     const rateLimitedAppendBlockChildren = await rateLimitedFetch(`appendBlockChildren(${id})`)
-    const res = await rateLimitedAppendBlockChildren(notionPageContentApiURL(id, opts), {
+    const res = await rateLimitedAppendBlockChildren(notionBlockChildrenApiURL(id), {
       method: 'PATCH',
       headers: this.notionApiHeaders,
       body: JSON.stringify({
         children: content && content.length > 0 ? content : undefined,
+        after: opts?.after
       }),
     })
 
@@ -312,8 +313,8 @@ export abstract class GenericDatabaseClass<
   }
 
   /**
-   * Update content to a page or block in the Notion database
-   * Recursively updates blocks content is different from existing content.
+   * Update content of a page or a block in the Notion database
+   * Recursively updates blocks content if it is different from existing content.
    *
    * @param id - Page or block id
    * @param content - Page content – Notion blocks. See Notion API documentation for the block format.
@@ -321,7 +322,7 @@ export abstract class GenericDatabaseClass<
    *
    * @example
    *
-   * await db.appendBlockChildren(pageId, content)
+   * await db.updateBlockChildren(pageId, content)
    */
   async updateBlockChildren(
     id: string,
@@ -343,7 +344,7 @@ export abstract class GenericDatabaseClass<
       }
 
       if (block.type !== updateBlock.type) {
-        await this.appendBlockChildren(id, [updateBlock], { after: block.id } as AppendBlockChildrenParameters)
+        await this.appendBlockChildren(id, [updateBlock], { after: block.id })
         await this.archiveBlock(block.id)
         continue
       }
@@ -400,14 +401,13 @@ export abstract class GenericDatabaseClass<
    *
    * console.log(blocks[0].has_children)
    */
-  async getPageBlocks(id: string): Promise<Array<BlockObjectResponseWithChildren>> {
+  async getPageBlocks(id: string, opts: ListBlockChildrenQueryParameters = { page_size: 100 }): Promise<Array<BlockObjectResponseWithChildren>> {
     const blocks: BlockObjectResponseWithChildren[] = []
-    const opts: ListBlockChildrenQueryParameters = { page_size: 100 }
     let listHasMore = false
     const rateLimitedGetPageBlocks = await rateLimitedFetch(`getPageBlocks(${id})`)
 
     do {
-      const res = await rateLimitedGetPageBlocks(notionPageContentApiURL(id, opts), {
+      const res = await rateLimitedGetPageBlocks(notionBlockChildrenApiURL(id, opts), {
         method: 'GET',
         headers: this.notionApiHeaders,
       })
@@ -450,7 +450,7 @@ export abstract class GenericDatabaseClass<
    */
   async archiveBlock(id: string): Promise<BlockObjectResponseWithChildren> {
     const rateLimitedArchiveBlock = await rateLimitedFetch(`archiveBlock(${id})`)
-    const res = await rateLimitedArchiveBlock(notionPageContentApiURL(id), {
+    const res = await rateLimitedArchiveBlock(notionBlockApiURL(id), {
       method: 'DELETE',
       headers: this.notionApiHeaders,
     })

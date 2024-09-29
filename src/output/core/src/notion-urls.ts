@@ -1,13 +1,13 @@
-import { AppendBlockChildrenParameters, ListBlockChildrenQueryParameters } from '../types/notion-api.types'
+import { ListBlockChildrenQueryParameters } from '../types/notion-api.types'
 
 export const normId = (id: string) => id.replace(/-/g, '')
 
 export const notionPageApiURL = (pageId?: string) =>
   pageId ? `https://api.notion.com/v1/pages/${normId(pageId)}` : `https://api.notion.com/v1/pages`
 
-export const notionPageContentApiURL = (
+export const notionBlockChildrenApiURL = (
   pageId: string,
-  opts?: ListBlockChildrenQueryParameters | AppendBlockChildrenParameters,
+  opts?: ListBlockChildrenQueryParameters,
 ) =>
   opts
     ? `https://api.notion.com/v1/blocks/${normId(pageId)}/children?${new URLSearchParams(opts as Record<string, string>).toString()}`
