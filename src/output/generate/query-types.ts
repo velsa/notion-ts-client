@@ -91,7 +91,15 @@ function getCustomFilterTypes(dbTypeName: string, propsConfig: ConfigFilePropert
       switch (prop._type) {
         case 'status':
         case 'select':
-          return `\nexport type ${typePrefix}PropertyType = ${dbTypeName}Response['properties']['${prop._name}']['${prop._type}']['name']
+          let exportStr
+
+          if (prop._name === 'Created by') {
+            exportStr = `export type ${typePrefix}PropertyType = NonNullable<${dbTypeName}Response['properties']['${prop._name}']['${prop._type}']>['name']`
+          } else {
+            exportStr = `export type ${typePrefix}PropertyType = ${dbTypeName}Response['properties']['${prop._name}']['${prop._type}']['name']`
+          }
+
+          return `\n${exportStr}
 
 type ${typePrefix}PropertyFilter =
   | {
