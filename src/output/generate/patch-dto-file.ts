@@ -85,7 +85,7 @@ function getDTOFileType(dbTypeName: string, dbPropsConfig: ConfigFilePropertiesC
     } else if (['rich_text', 'title'].includes(propConfig._type)) {
       typeValue = `string | { text: string; url?: string; annotations?: RichTextItemRequest['annotations'] } | RichTextItemRequest[]`
     } else {
-      typeValue = `TypeFromRecord<UpdatePageBodyParameters['properties'], { type: '${propConfig._type}' }>['${propConfig._type}']`
+      typeValue = `TypeFromRecord<UpdatePageBodyParameters['properties'], { type?: '${propConfig._type}' }>['${propConfig._type}']`
     }
 
     acc += `${TYPE_INDENT}${propConfig.varName}?: ${typeValue}\n`
