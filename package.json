@@ -1,6 +1,6 @@
 {
   "name": "notion-ts-client",
-  "version": "0.2.15",
+  "version": "0.2.16",
   "description": "Generates an easy to use and fully typed API to access and modify the data in Notion Databases",
   "repository": "https://github.com/velsa/notion-ts-client",
   "homepage": "https://github.com/velsa/notion-ts-client",
@@ -26,7 +26,7 @@
     "init": "./dist/index.js"
   },
   "scripts": {
-    "dev": "NOTION_TS_CLIENT_DEBUG=true npx tsx --inspect src/index.ts",
+    "dev": "NOTION_TS_CLIENT_DEBUG=true npx tsx --inspect src/index.ts -- generate",
     "build": "tsup src/index.ts --format cjs,esm --clean --out-dir dist",
     "release": "pnpm run build && changeset publish",
     "test": "npx jest --setupFiles dotenv/config",

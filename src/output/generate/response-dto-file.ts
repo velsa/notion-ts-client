@@ -123,6 +123,17 @@ function getDTOFileCode(dbPropsConfig: ConfigFilePropertiesConfig) {
       ${propConfig._type}: this.__props['${propConfig._name}']?.${propConfig._type},
     }
   }`
+    } else if (propConfig._type === 'files') {
+      acc += `
+
+  get ${propConfig.varName}() {
+    return {
+      urls: this.__props['${propConfig._name}'].files.map((item) => 
+        item.type === 'external' ? item.external.url : item.type === 'file' ? item.file.url : undefined
+      ),
+    }
+  }
+`
     } else {
       acc += `
 

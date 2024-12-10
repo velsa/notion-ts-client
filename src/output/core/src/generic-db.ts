@@ -334,9 +334,9 @@ export abstract class GenericDatabaseClass<
       const block = blocks[i] as BlockObjectResponseWithChildren
       const updateBlock = content[i] as BlockObjectRequest
       const blockContent = block[block.type as keyof BlockObjectResponseWithChildren] as unknown
-      const { children: updateBlockChildren, ...updateBlockContent } = updateBlock[
+      const { children: updateBlockChildren, ...updateBlockContent } = (updateBlock[
         updateBlock.type as keyof BlockObjectRequest
-      ] as { children?: BlockObjectRequest[] }
+      ] || {}) as { children?: BlockObjectRequest[] }
 
       if (!updateBlock || !updateBlockContent) {
         await this.archiveBlock(block.id)
