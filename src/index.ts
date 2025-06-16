@@ -1,8 +1,12 @@
 #!/usr/bin/env node
 import { Option, program } from "commander";
-import "dotenv/config";
+import dotenv from "dotenv";
 import { version } from "../package.json";
 import { generateTypescriptClients, initConfigFile } from "./cli";
+
+dotenv.config({
+  path: [ ".env", ".env.local", ".env.dev", ".env.prod" ]
+})
 
 program
   .name("notion-ts-client")

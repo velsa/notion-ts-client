@@ -134,6 +134,13 @@ function getDTOFileCode(dbPropsConfig: ConfigFilePropertiesConfig) {
     }
   }
 `
+    } else if (propConfig._type === 'relation') {
+      acc += `
+
+  get ${propConfig.varName}Ids() {
+    return (this.__props['${propConfig._name}']?.relation as unknown as Array<{ id: string }>).map((item) => item.id)  
+  }
+`
     } else {
       acc += `
 
