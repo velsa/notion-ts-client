@@ -2,13 +2,14 @@ import chalk from 'chalk'
 import fs from 'fs'
 import { confirmNewDatabases, mergeDatabaseConfigs, moveDefaultReadOnlyPropertiesToTheEnd } from '../parsers'
 import { ConfigFile, ConfigFileDatabasesConfig } from '../types'
-import { log, logError, logSuccess } from './log'
+import { log, logError, logSuccess, logWarn } from './log'
 
 const isEqual = <T>(a?: T[], b?: T[]) => JSON.stringify(a?.sort()) === JSON.stringify(b?.sort())
+const defaultConfig: ConfigFile = { ignore: [], databases: {} }
 
 export async function updateConfigFile(configFile: string, dbConfigData: ConfigFileDatabasesConfig) {
   if (!fs.existsSync(configFile)) {
-    logError(`File ${chalk.yellow(configFile)} does not exists. Please generate it with 'init' command.`)
+    logError(`File ${chalk.yellow(configFile)} does not exists, will not update.`)
     process.exit(1)
   }
 
@@ -44,6 +45,13 @@ export async function updateConfigFile(configFile: string, dbConfigData: ConfigF
 export function readUserConfig(configPath: string) {
   let userConfig: string
 
+  if (!fs.existsSync(configPath)) {
+    logWarn(`File ${chalk.yellow(configPath)} does not exists. Creating it...`)
+    fs.writeFileSync(configPath, JSON.stringify(defaultConfig, null, 2))
+
+    return defaultConfig
+  }
+
   try {
     userConfig = fs.readFileSync(configPath, 'utf8')
   } catch (err) {
@@ -51,14 +59,18 @@ export function readUserConfig(configPath: string) {
     process.exit(1)
   }
 
-  let userConfigData = {} as ConfigFile
-
   try {
-    userConfigData = JSON.parse(userConfig)
+    const userConfigData = JSON.parse(userConfig) as ConfigFile
+
+    if (!userConfigData.databases) {
+      logWarn(`File ${chalk.yellow(configPath)} is invalid, will overwrite...`)
+
+      return defaultConfig
+    }
+
+    return userConfigData
   } catch (err) {
     logError(`Error parsing ${chalk.yellow(configPath)}.`, err)
     process.exit(1)
   }
-
-  return userConfigData
 }
